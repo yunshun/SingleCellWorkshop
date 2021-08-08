@@ -1,7 +1,5 @@
 # Single cell RNA-seq analysis workshop
 
-# Workshop Description
-
 In this workshop, you will learn how to analyse single-cell RNA-seq count data using Seurat. 
 
 # Pre-requisites 
