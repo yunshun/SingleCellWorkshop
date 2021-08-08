@@ -1,9 +1,4 @@
-on: [push, pull_request]
-
-env:
-  cache-version: v1
-  repo-name: yunshun/singlecellworkshop
-
+on: [push]
 jobs:
   job1:
     runs-on: ubuntu-latest
