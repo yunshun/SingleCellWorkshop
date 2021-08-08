@@ -1,6 +1,6 @@
 Package: SingleCellWorkshop
 Title: Single cell RNA-seq analysis workshop
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: 
     person(given = "Yunshun",
            family = "Chen",
@@ -19,6 +19,7 @@ Depends:
 Suggests: 
     knitr,
     rmarkdown,
+    markdown,
     pkgdown,
     BiocStyle
 URL: https://yunshun.github.io/SingleCellWorkshop/
