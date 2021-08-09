@@ -127,7 +127,7 @@ head(N1469@meta.data)
 ```
 
 Scatter plots can be produced for visualizing some of the QC metrics.
-```{r QC_Scatter_plot, fig.cap="Scatter plots of QC metrics", fig.wide=TRUE, fig.asp=0.4}
+```{r QC_Scatter_plot, fig.cap="Scatter plots of QC metrics.", fig.wide=TRUE, fig.asp=0.4}
 plot1 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "percent.mt")
 plot2 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
 plot1 + plot2
@@ -161,7 +161,7 @@ N1469 <- FindVariableFeatures(N1469, selection.method="vst", nfeatures=1500)
 ```
 
 A mean-variance plot can be produced for visualizing the top variable genes.
-```{r HVG_plot, fig.cap="A mean-variance plot. Top 1500 HVGs are highlighted in red. Top 50 HVGs are labelled.", fig.asp=0.8}
+```{r HVG_plot, fig.cap="A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled.", fig.asp=0.8}
 top50 <- head(VariableFeatures(N1469), 50)
 plot1 <- VariableFeaturePlot(N1469)
 plot2 <- LabelPoints(plot=plot1, points=top50, repel=TRUE)
@@ -238,7 +238,7 @@ table(Idents(N1469))
 ```
 
 We can visualize the cell clusters in a UMAP plot.
-```{r UMAP, fig.cap="UMAP visualization. Cells are coloured by cell cluster.", fig.asp=0.85}
+```{r UMAP, fig.cap="UMAP visualization where cells are coloured by cell cluster.", fig.asp=0.85}
 DimPlot(N1469, reduction = "umap", label = TRUE)
 ```
 
@@ -359,12 +359,21 @@ col.p <- scales::hue_pal()(nlevels(Idents(N1469)))
 ternaryplot(TN, cex=0.2, pch=16, col=col.p[Idents(N1469)], grid=TRUE)
 ```
 
-
 # Integration analysis
+
+## Batch effects
+
+Comprehensive single cell RNA-seq experiments usually consist of multiple samples, which may be collected and prepared at different times, by different operators or with different reagents.
+These inconsistencies are referred to as "batch effects" and thye often lead to systematic differences in the expression profiles of the scRNA-seq data.
+Batch effects can be problematic as they distort the genuine biological differences and may mislead the interpretation of the data.
+Therefore, integration methods that adjust for "batch effects" are highly essential in multi-sample single cell RNA-seq analysis.
+
+Here, we will demonstrate how to perform an integration analysis in Seurat.
 
 ## Read in the data
 
-We first read in the raw data of all 5 samples for the integration analysis.
+We use 10X single cell RNA-seq profiles of normal epithelial cells from five individual human.
+We first read in the raw data of all five samples for the integration analysis.
 ```{r ReadAll, eval=TRUE}
 Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
 RawData <- list()
@@ -376,7 +385,8 @@ for(i in 2:length(Samples)) {
 names(RawData) <- Samples
 ```
 
-Then we create a list of Seurat objects.
+Then we create a list of 5 Seurat objects (one for each human sample).
+The same cell filtering criteria is applied to all the samples. 
 ```{r SeuratList, eval=TRUE}
 SeuratList <- list()
 for(i in 1:length(Samples)){
@@ -386,7 +396,7 @@ for(i in 1:length(Samples)){
 }
 ```
 
-We perform all the pre-processing steps for each individual sample.
+We perform all the pre-processing steps (normalization, defining HVGs and scaling the data) for each individual sample.
 ```{r Preprocessing, eval=TRUE}
 SeuratList <- lapply(SeuratList, NormalizeData)
 SeuratList <- lapply(SeuratList, FindVariableFeatures, selection.method="vst", nfeatures=1500)
@@ -394,15 +404,18 @@ SeuratList <- lapply(SeuratList, ScaleData)
 names(SeuratList) <- Samples
 ```
 
-
 ## Data integration
 
-We identify anchors using the FindIntegrationAnchors() function, which takes a list of Seurat objects as input.
+Seurat implements an anchor-based method for integrating multiple single cell RNA-seq samples.
+The method first identifies pairs of cells between different samples ("anchors") that are in a matched biological state.
+These "anchors" are then used to harmonize datasets into a single reference, of which the labels and data can be projected onto query datasets [@stuart2019comprehensive].
+
+We identify anchors using the `FindIntegrationAnchors()` function, which takes a list of Seurat objects as input.
 ```{r Anchor, eval=TRUE}
 Anchors <- FindIntegrationAnchors(SeuratList)
 ```
 
-We then use these anchors to integrate the two datasets together with IntegrateData().
+We then use these anchors to integrate the five datasets together with `IntegrateData()`.
 This step creates an \texttt{integrated} data assay.
 ```{r Integrate, eval=TRUE}
 NormEpi <- IntegrateData(Anchors)
@@ -414,13 +427,13 @@ NormEpi <- readRDS("Data/NormEpi.rds")
 ```
 
 Now we can run a single integrated analysis on all cells.
-The downstream analysis will be performed on corrected data (the \texttt{integrated} data assay).
-The original unmodified data still resides in the \texttt{RNA} assay.
-
+The downstream analysis will be performed on corrected data (the `integrated` data assay).
+The original unmodified data still resides in the `RNA` assay.
 
 ## Dimensional reduction
 
-We scale the data.
+The dimensional reduction step for the integrated data is the same as for a single sample.
+We first scale the data.
 ```{r Scale_ALL}
 NormEpi <- ScaleData(NormEpi, verbose=FALSE)
 ```
@@ -432,26 +445,31 @@ NormEpi <- RunPCA(NormEpi, npcs=dimUsed, verbose=FALSE)
 NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2021)
 ```
 
-```{r UMAP_Sample, fig.cap="UMAP visualization. Cells are coloured by patient."}
+The UMAP visualization of the integrated data is shown below.
+```{r UMAP_Sample, fig.cap="UMAP visualization of the integrated data where cells are coloured by patient."}
 DimPlot(NormEpi, reduction = "umap", group.by="orig.ident")
 ```
+From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed.
+It is also noticable that each of the big clusters contains a mixture of cells from different samples, suggesting these five samples share a similar cell type composition.
 
 ## Cell clustering
 
+We then proceed to cell clustering of the integrated data, which is done in the same way as before.
 ```{r Cluster_All}
 NormEpi <- FindNeighbors(NormEpi, dims=1:dimUsed)
 NormEpi <- FindClusters(NormEpi, resolution=0.1)
 table(Idents(NormEpi))
 ```
 
-```{r UMAP_Cluster, fig.cap="UMAP visualization. Cells are coloured by cluster."}
+The clustering results are shown in the UMAP plot below.
+```{r UMAP_Cluster, fig.cap="UMAP visualization of the integrated data where cells are coloured by cluster."}
 DimPlot(NormEpi, reduction = "umap", label=TRUE)
 ```
 
-
 ## Cell type annotation
 
-We use a human reference data for cell type annotation.
+The same human reference data is used for cell type annotation.
+The signature scores of the four cell populations are calculated for each cell in the integrated data.
 ```{r LoadSig2}
 HumanSig2 <- list(Basal=Basal, LP=LP, ML=ML, Str=Str)
 HumanSig2 <- lapply(HumanSig2, intersect, rownames(NormEpi))
@@ -462,22 +480,24 @@ for(i in 1:length(HumanSig2)){
     SigScore2[[i]] <- colMeans(NormEpi@assays$RNA@data[HumanSig[[i]], ])
 }
 ```
-
 ```{r AddMetaData2}
 SigScores2 <- do.call("cbind", SigScore2)
 colnames(SigScores2) <- c("Basal", "LP", "ML", "Stroma")
 NormEpi@meta.data <- cbind(NormEpi@meta.data, SigScores2)
 ```
 
-```{r SigScorePlot2, fig.cap="Signature scores.", fig.wide=TRUE, fig.asp=0.8}
+We then produce feature plots and violin plots to visualize the signature scores.
+```{r SigScorePlot2, fig.cap="Signature scores for the integrated data.", fig.wide=TRUE, fig.asp=0.8}
 FeaturePlot(NormEpi, features = colnames(SigScores2))
 ```
-
 ```{r SigScoreViolinPlot2, fig.cap="Violin plots of signature scores.", fig.wide=TRUE, fig.asp=0.7}
 VlnPlot(NormEpi, features = colnames(SigScores2), ncol=2, pt.size=0.1)
 ```
+It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells.
+Likewise, cluster 0 and 5 are LP or LP-like, cluster 1 and 4 are ML or ML-like, and cluster 3 is stroma. 
 
-```{r TernaryPlot2, fig.cap="Violin plots of signature scores.", fig.small=TRUE, fig.asp=1}
+A ternary plot can also be generated in the same way to examine the correlation between the cells and the three major epithelial populations.
+```{r TernaryPlot2, fig.cap="Violin plots of signature scores for the integrated data.", fig.small=TRUE, fig.asp=1}
 TN2 <- matrix(0L, ncol(NormEpi), 3L)
 colnames(TN2) <- c("LP", "ML", "Basal")
 for(i in colnames(TN2)){
@@ -489,12 +509,13 @@ ternaryplot(TN2, cex=0.2, pch=16, col=col.p[Idents(NormEpi)], grid=TRUE)
 
 ## Mark genes identification
 
-Find markers for every cluster compared to all remaining cells, report only the positive ones.
+Here, we use `FindAllMarkers()` to obtain markers for every cluster compared to all remaining cells.
+Same as bofore, we are only interested in the positive markers.
 ```{r AllMarkersNormEpi}
 NormEpi.markers <- FindAllMarkers(NormEpi, only.pos = TRUE)
 ```
 
-The top 3 marker genes for each of cluster were examined.
+The top 3 marker genes for each of cluster are listed below.
 ```{r TopMarkersAll, cache=TRUE, message=FALSE}
 topMarkers.all <- split(NormEpi.markers, NormEpi.markers$cluster)
 top3.all <- lapply(topMarkers.all, head, n=3)
@@ -502,14 +523,9 @@ top3.all <- do.call("rbind", top3.all)
 top3.all
 ```
 
-The expression level of the top marker genes were overlaid on the UMAP plots for visualization.
+We highlight the expression levels of these markers genes in the UMAP plots for visualization.
 ```{r FeaturePlotMarkersAll, fig.cap="Top marker expression visualizations on a UMAP plot.", fig.wide=TRUE, fig.asp=1.4}
 FeaturePlot(NormEpi, features = top3.all$gene, ncol=3)
-```
-
-A dot plot can also be produced for visualizing the top marker genes.
-```{r DotPlotMarkersAll, fig.cap="A dot plot of top marker genes of each cluster.", fig.asp=0.5}
-DotPlot(NormEpi, features = top3.all$gene, dot.scale = 8, split.by = "orig.ident", cols=col.p) + RotatedAxis()
 ```
 
 
