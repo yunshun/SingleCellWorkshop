@@ -65,7 +65,7 @@ for(i in 1:length(Samples)){
     if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 }
 ```
-```{r Download, eval=FALSE}
+```{r Download, eval=TRUE}
 GSM <- "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4909nnn/"
 url.matrix <- paste0(GSM, 
     c("GSM4909258/suppl/GSM4909258_N-NF-Epi-matrix.mtx.gz",
@@ -304,7 +304,7 @@ Genes were considered cell type-specific if they were upregulated in one cell ty
 This yielded 515, 323, 765, and 1094 signature genes for basal, LP, ML, and stroma, respectively.
 
 Here we download those signature genes and load them into R.
-```{r HumanSig, eval=FALSE}
+```{r HumanSig, eval=TRUE}
 url.Signatures <- "https://github.com/SmythLab/scRNAseq-Workshop/raw/main/Data/Human-PosSigGenes.RData"
 utils::download.file(url.Signatures, destfile="Data/Human-PosSigGenes.RData", mode="wb") 
 ```
