@@ -365,7 +365,7 @@ ternaryplot(TN, cex=0.2, pch=16, col=col.p[Idents(N1469)], grid=TRUE)
 ## Read in the data
 
 We first read in the raw data of all 5 samples for the integration analysis.
-```{r ReadAll, eval=FALSE}
+```{r ReadAll, eval=TRUE}
 Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
 RawData <- list()
 RawData[[1]] <- N1469.data
@@ -377,7 +377,7 @@ names(RawData) <- Samples
 ```
 
 Then we create a list of Seurat objects.
-```{r SeuratList, eval=FALSE}
+```{r SeuratList, eval=TRUE}
 SeuratList <- list()
 for(i in 1:length(Samples)){
 	SeuratList[[i]] <- CreateSeuratObject(counts=RawData[[i]], project=Samples[i], min.cells=3, min.features=200)
@@ -387,7 +387,7 @@ for(i in 1:length(Samples)){
 ```
 
 We perform all the pre-processing steps for each individual sample.
-```{r Preprocessing, eval=FALSE}
+```{r Preprocessing, eval=TRUE}
 SeuratList <- lapply(SeuratList, NormalizeData)
 SeuratList <- lapply(SeuratList, FindVariableFeatures, selection.method="vst", nfeatures=1500)
 SeuratList <- lapply(SeuratList, ScaleData)
@@ -398,16 +398,16 @@ names(SeuratList) <- Samples
 ## Data integration
 
 We identify anchors using the FindIntegrationAnchors() function, which takes a list of Seurat objects as input.
-```{r Anchor, eval=FALSE}
+```{r Anchor, eval=TRUE}
 Anchors <- FindIntegrationAnchors(SeuratList)
 ```
 
 We then use these anchors to integrate the two datasets together with IntegrateData().
 This step creates an \texttt{integrated} data assay.
-```{r Integrate, eval=FALSE}
+```{r Integrate, eval=TRUE}
 NormEpi <- IntegrateData(Anchors)
 ```
-```{r LoadResults, echo=FALSE}
+```{r LoadResults, echo=FALSE, eval=FALSE}
 url.integrated <- "http://bioinf.wehi.edu.au/edgeR/SingleCellWorkshop/NormEpi.rds"
 utils::download.file(url.integrated, destfile="Data/NormEpi.rds", mode="wb") 
 NormEpi <- readRDS("Data/NormEpi.rds")
