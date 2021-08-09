@@ -5,7 +5,7 @@ author:
   affiliation: Walter and Eliza Hall Institute of Medical Research
   email: yuchen@wehi.edu.au
 output:
-  rmarkdown::html_document:
+  BiocStyle::html_document:
     toc: true
     toc_float: true
 bibliography: ref.bib
@@ -58,14 +58,14 @@ The information of how to run `cellranger` is available at
 #knitr::opts_chunk$set(error=FALSE, prompt=TRUE, comment=NA)
 knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE, message=FALSE, warning=FALSE, echo=TRUE)
 ```
-```{r Samples, echo=TRUE}
+```{r Samples}
 Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
 for(i in 1:length(Samples)){
     out_dir  <- file.path("Data", Samples[i])
     if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 }
 ```
-```{r Download, echo=TRUE, eval=TRUE}
+```{r Download, eval=FALSE}
 GSM <- "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4909nnn/"
 url.matrix <- paste0(GSM, 
     c("GSM4909258/suppl/GSM4909258_N-NF-Epi-matrix.mtx.gz",
@@ -94,7 +94,7 @@ To distinguish cells from different patients in the later analysis, the patient 
 ```{r loadSeurat, message=FALSE}
 library(Seurat)
 ```
-```{r Readin, cache=TRUE}
+```{r Readin}
 N1469.data <- Read10X(data.dir = "Data/N1469")
 colnames(N1469.data) <- paste("N1469", colnames(N1469.data), sep="_")
 ```
@@ -117,12 +117,12 @@ Another measure to look at is the proportion of reads from mitochondrial genes i
 Cells with higher mitochondrial content are more prone to die, and hence should also be from the analysis.
 Here, we calculate the percentages of reads from mitochondrial genes and store them in the metadata of the Seurat object.
 We use the set of all genes starting with MT- as a set of mitochondrial genes.
-```{r MT, cache=TRUE}
+```{r MT}
 N1469[["percent.mt"]] <- PercentageFeatureSet(N1469, pattern = "^MT-")
 ```
 
 The QC metrics of a Seurat object can be viewed as follows.
-```{r QCMetric, cache=TRUE}
+```{r QCMetric}
 head(N1469@meta.data)
 ```
 
@@ -134,7 +134,7 @@ plot1 + plot2
 ```
 
 For this particular data, we filter cells that have unique feature less than 500 and with >20\% mitochondrial counts.
-```{r CellFilter, cache=TRUE}
+```{r CellFilter}
 N1469 <- subset(N1469, subset = nFeature_RNA > 500 & percent.mt < 20)
 ```
 
@@ -144,7 +144,7 @@ After cell filtering, the next step is normalization.
 Normalization is useful for removing cell-specific biases.
 
 Here, we perform the default normalization method in Seurat, which divides gene counts by the total counts for each cell, multiplies this by a scale factor of 10,000, and then log-transforms the result.
-```{r Normalization, cache=TRUE}
+```{r Normalization}
 N1469 <- NormalizeData(N1469)
 ```
 
@@ -156,7 +156,7 @@ One of the most commonly used strategies is to take the top genes with the highe
 The choice of the number of HVGs is fairly arbitrary, with any value from 500 to 5000 considered reasonable.
 
 For this data, we select top 1500 HVGs to be used in downstream analyses such as PCA and UMAP visualization.
-```{r HVG, cache=TRUE}
+```{r HVG}
 N1469 <- FindVariableFeatures(N1469, selection.method="vst", nfeatures=1500)
 ```
 
@@ -173,7 +173,7 @@ This data scaling is performed by the ``ScaleData()`` function, which standardiz
 This step gives equal weight to the genes used in downstream analyses so that highly-expressed genes do not dominate.
 
 By default, the scaling process is only applied to the previously identified 1500 HVGs as these HVGs are used for the downstream analyses.
-```{r Scaling, cache=TRUE}
+```{r Scaling}
 N1469 <- ScaleData(N1469)
 ```
 
@@ -203,7 +203,7 @@ Note that both UMAP and tSNE involve a series of randomization steps so setting 
 
 Here we perform both UMAP and tSNE for dimensional reduction and visualization.
 The top 30 PCs are used as input and a random seed is used for reproducibility.
-```{r DR, cache=TRUE, message=FALSE}
+```{r DR}
 dimUsed <- 30
 N1469 <- RunUMAP(N1469, dims=1:dimUsed, seed.use=2021, verbose=FALSE)
 N1469 <- RunTSNE(N1469, dims=1:dimUsed, seed.use=2021)
@@ -231,7 +231,7 @@ Here, we use the top 30 PCs as input.
 Then the Seurat ``FindClusters()`` function applies the Louvain algorithm (by default) to group cells together.
 For this particular data, we set the resolution parameter to 0.1.
 The final clusters can be found using the \texttt{Idents()} function.
-```{r Cluster, cache=TRUE, message=FALSE}
+```{r Cluster}
 N1469 <- FindNeighbors(N1469, dims=1:dimUsed)
 N1469 <- FindClusters(N1469, resolution=0.1)
 table(Idents(N1469))
@@ -255,25 +255,25 @@ The `logfc.threshold` limits testing to genes of which the log-fold change betwe
 By default the `FindMarkers()` function performs Wilcoxon Rank Sum tests, but other statistical tests (eg. likelihood-ratio test, _t_-test) are also available.
 
 Here we find all markers of cluster 1 as follows.
-```{r Markers1, cache=TRUE, message=FALSE}
+```{r Markers1}
 cluster1.markers <- FindMarkers(N1469, ident.1 = 1, min.pct = 0.25)
 head(cluster1.markers)
 ```
 
 To find all markers distinguishing cluster 2 from clusters 0 and 1, we use the following lines.
-```{r Markers2, cache=TRUE, message=FALSE}
+```{r Markers2}
 cluster2.markers <- FindMarkers(N1469, ident.1 = 2, ident.2 = c(0, 1), min.pct = 0.25)
 head(cluster2.markers)
 ```
 
 The Seurat `FindAllMarkers()` function automates the marker detection process for all clusters.
 Here we find markers for every cluster compared to all remaining cells, report only the positive ones.
-```{r AllMarkers, cache=TRUE, message=FALSE}
+```{r AllMarkers}
 N1469.markers <- FindAllMarkers(N1469, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 ```
 
 We select the top 3 marker genes for each of cluster and list them below.
-```{r TopMarkers, cache=TRUE, message=FALSE}
+```{r TopMarkers}
 topMarkers <- split(N1469.markers, N1469.markers$cluster)
 top3 <- lapply(topMarkers, head, n=3)
 top3 <- do.call("rbind", top3)
@@ -304,7 +304,7 @@ Genes were considered cell type-specific if they were upregulated in one cell ty
 This yielded 515, 323, 765, and 1094 signature genes for basal, LP, ML, and stroma, respectively.
 
 Here we download those signature genes and load them into R.
-```{r HumanSig}
+```{r HumanSig, eval=FALSE}
 url.Signatures <- "https://github.com/SmythLab/scRNAseq-Workshop/raw/main/Data/Human-PosSigGenes.RData"
 utils::download.file(url.Signatures, destfile="Data/Human-PosSigGenes.RData", mode="wb") 
 ```
@@ -365,7 +365,7 @@ ternaryplot(TN, cex=0.2, pch=16, col=col.p[Idents(N1469)], grid=TRUE)
 ## Read in the data
 
 We first read in the raw data of all 5 samples for the integration analysis.
-```{r ReadAll, cache=TRUE}
+```{r ReadAll, eval=FALSE}
 Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
 RawData <- list()
 RawData[[1]] <- N1469.data
@@ -377,7 +377,7 @@ names(RawData) <- Samples
 ```
 
 Then we create a list of Seurat objects.
-```{r SeuratList, cache=TRUE}
+```{r SeuratList, eval=FALSE}
 SeuratList <- list()
 for(i in 1:length(Samples)){
 	SeuratList[[i]] <- CreateSeuratObject(counts=RawData[[i]], project=Samples[i], min.cells=3, min.features=200)
@@ -387,7 +387,7 @@ for(i in 1:length(Samples)){
 ```
 
 We perform all the pre-processing steps for each individual sample.
-```{r Preprocessing, cache=TRUE, message=FALSE}
+```{r Preprocessing, eval=FALSE}
 SeuratList <- lapply(SeuratList, NormalizeData)
 SeuratList <- lapply(SeuratList, FindVariableFeatures, selection.method="vst", nfeatures=1500)
 SeuratList <- lapply(SeuratList, ScaleData)
@@ -398,14 +398,19 @@ names(SeuratList) <- Samples
 ## Data integration
 
 We identify anchors using the FindIntegrationAnchors() function, which takes a list of Seurat objects as input.
-```{r Anchor, cache=TRUE, message=FALSE}
+```{r Anchor, eval=FALSE}
 Anchors <- FindIntegrationAnchors(SeuratList)
 ```
 
 We then use these anchors to integrate the two datasets together with IntegrateData().
 This step creates an \texttt{integrated} data assay.
-```{r Integrate, cache=TRUE, message=FALSE}
+```{r Integrate, eval=FALSE}
 NormEpi <- IntegrateData(Anchors)
+```
+```{r LoadResults, echo=FALSE}
+url.integrated <- "http://bioinf.wehi.edu.au/edgeR/SingleCellWorkshop/NormEpi.rds"
+utils::download.file(url.integrated, destfile="Data/NormEpi.rds", mode="wb") 
+NormEpi <- readRDS("Data/NormEpi.rds")
 ```
 
 Now we can run a single integrated analysis on all cells.
@@ -416,12 +421,12 @@ The original unmodified data still resides in the \texttt{RNA} assay.
 ## Dimensional reduction
 
 We scale the data.
-```{r Scale_ALL, cache=TRUE, message=FALSE}
+```{r Scale_ALL}
 NormEpi <- ScaleData(NormEpi, verbose=FALSE)
 ```
 
 Then we perform dimensional reduction (PCA and UMAP) for the integrated data.
-```{r DR_All, cache=TRUE, message=FALSE}
+```{r DR_All}
 dimUsed <- 30
 NormEpi <- RunPCA(NormEpi, npcs=dimUsed, verbose=FALSE)
 NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2021)
@@ -433,7 +438,7 @@ DimPlot(NormEpi, reduction = "umap", group.by="orig.ident")
 
 ## Cell clustering
 
-```{r Cluster_All, cache=TRUE, message=FALSE}
+```{r Cluster_All}
 NormEpi <- FindNeighbors(NormEpi, dims=1:dimUsed)
 NormEpi <- FindClusters(NormEpi, resolution=0.1)
 table(Idents(NormEpi))
@@ -637,13 +642,10 @@ pheatmap(expr, color=colorRampPalette(c("blue","white","red"))(100), border_colo
 ```
 
 
-# Session info {.unnumbered}
-<details>
-  <summary>**Session Info**</summary>
+# Session info
+
 ```{r}
 sessionInfo()
 ```
-</details>
-
 
 # References
