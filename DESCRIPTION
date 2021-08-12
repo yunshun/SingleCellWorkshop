@@ -1,6 +1,6 @@
 Package: SingleCellWorkshop
 Title: Single cell RNA-seq analysis workshop
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: 
     person(given = "Yunshun",
            family = "Chen",
@@ -15,7 +15,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
 Depends: 
-    Seurat, edgeR, R.utils, vcd, scales, pheatmap, magick
+    Seurat, edgeR, vcd, scales, pheatmap, magick
 Suggests: 
     knitr,
     rmarkdown,
