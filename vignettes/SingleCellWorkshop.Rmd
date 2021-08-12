@@ -44,11 +44,14 @@ We do not cover the details of running `cellranger` as they are beyond the scope
 The information of how to run `cellranger` is available at 
 \url{https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger}.
 
-```{r GlobalOptions, echo=FALSE, include=FALSE, cache=FALSE}
+```{r GlobalOptions, echo=FALSE, include=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(fig.width=6, fig.height=5.5, fig.align='center')
 #knitr::opts_chunk$set(error=FALSE, prompt=TRUE, comment=NA)
 knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 #knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE)
+options(digits=3)
+options(width=90)
+library(BiocStyle)
 ```
 
 ## Downloading the read counts
@@ -95,7 +98,7 @@ The object `N1469.data` is a sparse matrix containing the raw count data of Pati
 Rows are features (genes) and columns are cells.
 By default, the column names of the data are the cell barcodes.
 To distinguish cells from different patients in the later analysis, the patient Id is added as a prefix to the column names.
-```{r loadSeurat, message=FALSE}
+```{r loadSeurat}
 library(Seurat)
 ```
 ```{r Readin}
