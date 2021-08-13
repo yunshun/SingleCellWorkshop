@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -486,7 +486,7 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 ## Running Louvain algorithm...
 ## Maximum modularity in 10 random starts: 0.9642
 ## Number of communities: 6
-## Elapsed time: 3 seconds</code></pre>
+## Elapsed time: 2 seconds</code></pre>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
@@ -549,10 +549,247 @@ Violin plots of signature scores for the integrated data.
 </div>
 </div>
 </div>
+<div id="multi-sample-differential-expression-analysis" class="section level1">
+<h1 class="hasAnchor">
+<a href="#multi-sample-differential-expression-analysis" class="anchor"></a>Multi-sample differential expression analysis</h1>
+<div id="biological-variation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#biological-variation" class="anchor"></a>Biological variation</h2>
+<p>In RNA-seq experiments with replicate samples, biological variation represents the variation of the underlying gene abundances between the replicates. Accounting for biological variation is crucial in RNA-seq DE analysis. Many statistically rigorous methods and software packages have been developed for estimating biological variation and incorporating it into the DE analysis (e.g., edgeR, limma, DESeq2 etc.).</p>
+<p>For single cell RNA-seq experiments with biological replicates, one should also take into account the biological variation between different replicate samples where cells are obtained. However, applying bulk RNA-seq DE methods directly to single cell RNA-seq data is not appropriate as each cell is not independent biological replicate. One of the commonly used methods to account for biological variation between replicates is the “pseudo-bulk” approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together.</p>
+</div>
+<div id="creating-pseudo-bulk-samples" class="section level2">
+<h2 class="hasAnchor">
+<a href="#creating-pseudo-bulk-samples" class="anchor"></a>Creating pseudo-bulk samples</h2>
+<p>We first extract the cluster and sample information from the integrated Seurat object and combine them together. The numbers of cells under different combinations of cell cluster and sample are shown below.</p>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">sampID</span> <span class="op">&lt;-</span> <span class="va">NormEpi</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">orig.ident</span>
+<span class="va">clustID</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span>
+<span class="va">sampClust</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">sampID</span>, <span class="va">clustID</span>, sep<span class="op">=</span><span class="st">"_Clst"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">sampClust</span><span class="op">)</span></code></pre></div>
+<pre><code>## sampClust
+## N0123_Clst0 N0123_Clst1 N0123_Clst2 N0123_Clst3 N0123_Clst4 N0123_Clst5 N0230_Clst0 
+##         839        1563         366          12          41          19        1033 
+## N0230_Clst1 N0230_Clst2 N0230_Clst3 N0230_Clst4 N0230_Clst5 N0280_Clst0 N0280_Clst1 
+##         561         156          77          15          15         346         392 
+## N0280_Clst2 N0280_Clst3 N0280_Clst4 N0280_Clst5 N1105_Clst0 N1105_Clst1 N1105_Clst2 
+##         316          39          30           3        1597        2469         784 
+## N1105_Clst3 N1105_Clst4 N1105_Clst5 N1469_Clst0 N1469_Clst1 N1469_Clst2 N1469_Clst3 
+##          80          22           1        1705         461         418         210 
+## N1469_Clst4 N1469_Clst5 
+##          45          29</code></pre>
+<p>We then form pseudo-bulk samples by aggregating the read counts for each gene by cluster-sample combination.</p>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">rawCounts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span><span class="op">)</span>
+<span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rowsum.html">rowsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">rawCounts</span><span class="op">)</span>, group<span class="op">=</span><span class="va">sampClust</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>We create a <code>DGEList</code> object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline.</p>
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://bioinf.wehi.edu.au/edgeR">edgeR</a></span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/DGEList.html">DGEList</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>
+<span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"^.*_Clst"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">Patient</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"_.*$"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span>, level<span class="op">=</span><span class="va">Samples</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="filtering" class="section level2">
+<h2 class="hasAnchor">
+<a href="#filtering" class="anchor"></a>Filtering</h2>
+<p>The library size (total number of reads) of each pseudo-bulk sample highly depends on the number of cells in that sample. We remove the samples with library size less than 50,000.</p>
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">keep.sample</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">lib.size</span> <span class="op">&gt;</span> <span class="fl">5e4</span>
+<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.sample</span><span class="op">)</span></code></pre></div>
+<pre><code>## keep.sample
+## FALSE  TRUE 
+##     2    28</code></pre>
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span>,<span class="va">keep.sample</span><span class="op">]</span></code></pre></div>
+<p>The gene filtering is performed by the <code>filterByExpr</code> function in edgeR.</p>
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">keep.gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/filterByExpr.html">filterByExpr</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.gene</span><span class="op">)</span></code></pre></div>
+<pre><code>## keep.gene
+## FALSE  TRUE 
+##  8775 10454</code></pre>
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">keep.gene</span>,,keep<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></code></pre></div>
+</div>
+<div id="normalization-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#normalization-1" class="anchor"></a>Normalization</h2>
+<p>We perform TMM normalization to adjust for the compositional biases between the samples. The normalization factors are listed below.</p>
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html">calcNormFactors</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="va">y</span><span class="op">$</span><span class="va">samples</span></code></pre></div>
+<pre><code>##             group lib.size norm.factors Patient
+## N0123_Clst0     0  4252753        0.914   N0123
+## N0123_Clst1     1  5913960        1.033   N0123
+## N0123_Clst2     2   933292        0.870   N0123
+## N0123_Clst4     4   144308        1.135   N0123
+## N0123_Clst5     5   155185        1.155   N0123
+## N0230_Clst0     0  4261533        1.110   N0230
+## N0230_Clst1     1  1935170        1.140   N0230
+## N0230_Clst2     2   452640        1.031   N0230
+## N0230_Clst3     3   214246        1.115   N0230
+## N0230_Clst4     4    67372        1.410   N0230
+## N0230_Clst5     5    80893        1.437   N0230
+## N0280_Clst0     0  3774944        0.729   N0280
+## N0280_Clst1     1  2031958        1.014   N0280
+## N0280_Clst2     2  1382642        0.875   N0280
+## N0280_Clst3     3   188620        1.039   N0280
+## N0280_Clst4     4   180587        1.185   N0280
+## N0280_Clst5     5    55465        1.251   N0280
+## N1105_Clst0     0 18342441        0.767   N1105
+## N1105_Clst1     1 15781150        0.968   N1105
+## N1105_Clst2     2  3730398        0.778   N1105
+## N1105_Clst3     3   430622        0.908   N1105
+## N1105_Clst4     4   172690        1.219   N1105
+## N1469_Clst0     0 10459180        0.859   N1469
+## N1469_Clst1     1  2315185        0.923   N1469
+## N1469_Clst2     2  1745234        0.831   N1469
+## N1469_Clst3     3  1170267        0.776   N1469
+## N1469_Clst4     4   234042        0.933   N1469
+## N1469_Clst5     5   261094        1.034   N1469</code></pre>
+</div>
+<div id="data-exploration" class="section level2">
+<h2 class="hasAnchor">
+<a href="#data-exploration" class="anchor"></a>Data exploration</h2>
+<p>We produce an MDS plot to visualize the relationship between all the pseudo-bulk samples.</p>
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">Cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">group</span><span class="op">)</span>
+<span class="va">Patient</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">Patient</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="va">Cluster</span><span class="op">]</span>, main<span class="op">=</span><span class="st">"By cluster"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Cluster"</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">)</span>
+<span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">Patient</span>, main<span class="op">=</span><span class="st">"By sample"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Patient</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="SingleCellWorkshop_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="864"><p class="caption">
+MDS plots of the pseudo-bulk samples.
+</p>
+</div>
+<p>From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level. We also notice that samples from cluster 0 and 5 have similar expression pattern, whereas samples from cluster 1 and 4 are close to each other.</p>
+<p>We use the cluster and sample information to create a design matrix as follows.</p>
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">Cluster</span> <span class="op">+</span> <span class="va">Patient</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span></code></pre></div>
+<pre><code>##  [1] "Cluster0"     "Cluster1"     "Cluster2"     "Cluster3"     "Cluster4"    
+##  [6] "Cluster5"     "PatientN0280" "PatientN1105" "PatientN0230" "PatientN0123"</code></pre>
+</div>
+<div id="dispersion-estimation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#dispersion-estimation" class="anchor"></a>Dispersion estimation</h2>
+<p>We estimate negative binomial dispersions and quasi-likelihood dispersions as follows.</p>
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/estimateDisp.html">estimateDisp</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span>
+<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/glmQLFTest.html">glmQLFit</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span></code></pre></div>
+<p>The dispersions can be examined in the following plots.</p>
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotBCV.html">plotBCV</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotQLDisp.html">plotQLDisp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="SingleCellWorkshop_files/figure-html/plotDisp-1.png" alt="BCV and quasi-likelihood dispersion plots." width="864"><p class="caption">
+BCV and quasi-likelihood dispersion plots.
+</p>
+</div>
+</div>
+<div id="differential-expression" class="section level2">
+<h2 class="hasAnchor">
+<a href="#differential-expression" class="anchor"></a>Differential expression</h2>
+<p>For the differential expression analysis, we are particularly interested in the genes that are up-regulated in each cluster compared with all the other clusters. Therefore, we create a contrast matrix as follows. Each column of the matrix represents a testing constrast that compares one cluster with the average of all the other clusters.</p>
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">ncls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span>
+<span class="va">contr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">ncls</span><span class="op">)</span>, <span class="va">ncls</span>, <span class="va">ncls</span><span class="op">)</span>,
+                <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span><span class="op">-</span><span class="va">ncls</span>, <span class="va">ncls</span><span class="op">)</span> <span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Cluster"</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="va">contr</span></code></pre></div>
+<pre><code>##              Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
+## Cluster0          1.0     -0.2     -0.2     -0.2     -0.2     -0.2
+## Cluster1         -0.2      1.0     -0.2     -0.2     -0.2     -0.2
+## Cluster2         -0.2     -0.2      1.0     -0.2     -0.2     -0.2
+## Cluster3         -0.2     -0.2     -0.2      1.0     -0.2     -0.2
+## Cluster4         -0.2     -0.2     -0.2     -0.2      1.0     -0.2
+## Cluster5         -0.2     -0.2     -0.2     -0.2     -0.2      1.0
+## PatientN0280      0.0      0.0      0.0      0.0      0.0      0.0
+## PatientN1105      0.0      0.0      0.0      0.0      0.0      0.0
+## PatientN0230      0.0      0.0      0.0      0.0      0.0      0.0
+## PatientN0123      0.0      0.0      0.0      0.0      0.0      0.0</code></pre>
+<p>We then perform quasi-likelihood F-test under each contrast. In order to focus on genes with strong DE signal, we test for the differences above a fold-change threshold of 1.3. This is done by calling the <code>glmTreat</code> function in edgeR. The results of all the tests are stored as a list of <code>DGELRT</code> objects.</p>
+<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">ncls</span><span class="op">)</span> <span class="va">test</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/glmTreat.html">glmTreat</a></span><span class="op">(</span><span class="va">fit</span>, contrast<span class="op">=</span><span class="va">contr</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lfc<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="fl">1.3</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">test</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span></code></pre></div>
+<p>The number of DE genes under each comparison can be viewed by the <code>decideTestsDGE</code> function.</p>
+<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">dtest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">test</span>, <span class="va">decideTestsDGE</span><span class="op">)</span>, <span class="va">summary</span><span class="op">)</span>
+<span class="va">dtest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"cbind"</span>, <span class="va">dtest</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">dtest</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span>
+<span class="va">dtest</span></code></pre></div>
+<pre><code>##        Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
+## Down        574      919     1506     1109     1481      497
+## NotSig     8599     7161     6685     7692     7401     9380
+## Up         1281     2374     2263     1653     1572      577</code></pre>
+<p>We can view the top DE results using the <code>topTags</code> function. For example, to see the top 20 DE genes of cluster 2 vs all the other clusters, we use the following line.</p>
+<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/topTags.html">topTags</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">Cluster2</span>, n<span class="op">=</span><span class="fl">20L</span><span class="op">)</span></code></pre></div>
+<pre><code>## Coefficient:  -0.2*Cluster0 -0.2*Cluster1 1*Cluster2 -0.2*Cluster3 -0.2*Cluster4 -0.2*Cluster5 
+##          logFC unshrunk.logFC logCPM   PValue      FDR
+## ACTG2     7.72           7.73   9.21 2.82e-26 2.95e-22
+## SERPINB5  6.28           6.30   6.56 3.58e-25 1.87e-21
+## KRT5      6.51           6.52   8.98 2.57e-24 7.20e-21
+## TPM2      5.77           5.78   8.27 2.76e-24 7.20e-21
+## DLL1      5.38           5.39   5.96 9.51e-24 1.99e-20
+## DKK3      5.77           5.78   6.70 1.24e-23 2.17e-20
+## CD200     6.11           6.13   6.52 1.57e-23 2.34e-20
+## KRT14     7.39           7.39  10.84 1.16e-22 1.51e-19
+## TNS4      4.96           4.97   6.25 1.76e-21 2.04e-18
+## ACTA2     6.22           6.23   8.45 2.66e-21 2.78e-18
+## GPC1      4.65           4.66   6.31 3.87e-21 3.68e-18
+## NRP2      5.92           5.96   6.08 4.25e-21 3.70e-18
+## COL17A1   8.93          16.15   5.34 4.69e-21 3.77e-18
+## CCND2     7.07          10.60   5.68 5.44e-21 4.06e-18
+## CAV1      4.76           4.76   8.32 6.77e-21 4.72e-18
+## MSRB3     5.27           5.29   5.38 7.63e-21 4.99e-18
+## TUBB2B    4.44           4.44   7.58 1.00e-20 6.17e-18
+## OXTR      5.35           5.37   6.25 1.14e-20 6.61e-18
+## DST       3.84           3.84   8.71 2.04e-20 1.12e-17
+## FAM126A   4.41           4.42   5.87 2.87e-20 1.50e-17</code></pre>
+<p>We can extract the top 15 marker genes (up-regulated only) of each cluster as follows.</p>
+<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">top</span> <span class="op">&lt;-</span> <span class="fl">15</span>
+<span class="va">pseudoMakers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">ncls</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">test</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">table</span>
+    <span class="va">ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">PValue</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/sign.html">sign</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">logFC</span><span class="op">)</span><span class="op">)</span>
+    <span class="va">pseudoMakers</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">[</span><span class="va">ord</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">top</span><span class="op">]</span><span class="op">]</span>
+<span class="op">}</span>
+<span class="va">Markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span><span class="op">(</span><span class="va">pseudoMakers</span><span class="op">)</span>
+<span class="va">Markers</span> <span class="op">&lt;-</span> <span class="va">Markers</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">Markers</span><span class="op">)</span><span class="op">]</span></code></pre></div>
+<p>Then we create a heatmap using <code>pheatmap</code> for those top marker genes. The standardized log-CPM values of the marker genes are used for the expression levels on the heatmap. Genes and samples on the heatmap are reordered by the Ward method of hierarchical clustering, which correctly groups samples by cell cluster.</p>
+<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">pheatmap</span><span class="op">)</span>
+<span class="va">lcpm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/cpm.html">cpm</a></span><span class="op">(</span><span class="va">y</span>, log<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">expr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">lcpm</span><span class="op">[</span><span class="va">Markers</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="va">annot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Cluster<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Cluster "</span>, <span class="va">Cluster</span><span class="op">)</span>, Patient<span class="op">=</span><span class="va">Patient</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">annot</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">expr</span><span class="op">)</span>
+<span class="va">ann_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Cluster<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">ncls</span><span class="op">]</span>, Patient<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Samples</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ann_colors</span><span class="op">$</span><span class="va">Cluster</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Cluster "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ann_colors</span><span class="op">$</span><span class="va">Patient</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">Samples</span>
+<span class="fu"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html">pheatmap</a></span><span class="op">(</span><span class="va">expr</span>, color<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"blue"</span>,<span class="st">"white"</span>,<span class="st">"red"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, border_color<span class="op">=</span><span class="st">"NA"</span>,
+    breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>,<span class="fl">2</span>,length.out<span class="op">=</span><span class="fl">101</span><span class="op">)</span>, cluster_cols<span class="op">=</span><span class="cn">TRUE</span>, scale<span class="op">=</span><span class="st">"none"</span>, fontsize_row<span class="op">=</span><span class="fl">7</span>,
+    show_colnames<span class="op">=</span><span class="cn">FALSE</span>, treeheight_row<span class="op">=</span><span class="fl">70</span>, treeheight_col<span class="op">=</span><span class="fl">70</span>, cutree_cols<span class="op">=</span><span class="va">ncls</span>,
+    clustering_method<span class="op">=</span><span class="st">"ward.D2"</span>, annotation_col<span class="op">=</span><span class="va">annot</span>, annotation_colors<span class="op">=</span><span class="va">ann_colors</span><span class="op">)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="SingleCellWorkshop_files/figure-html/HeatmapPB-1.png" alt="Heat map of the top marker genes." width="720"><p class="caption">
+Heat map of the top marker genes.
+</p>
+</div>
+</div>
+</div>
 <div id="session-info" class="section level1">
 <h1 class="hasAnchor">
 <a href="#session-info" class="anchor"></a>Session info</h1>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code>## R version 4.1.0 (2021-05-18)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -571,7 +808,8 @@ Violin plots of signature scores for the integrated data.
 ## [1] grid      stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] vcd_1.4-8          SeuratObject_4.0.2 Seurat_4.0.3       BiocStyle_2.21.3  
+## [1] pheatmap_1.0.12    edgeR_3.35.0       limma_3.49.4       vcd_1.4-8         
+## [5] SeuratObject_4.0.2 Seurat_4.0.3       BiocStyle_2.21.3  
 ## 
 ## loaded via a namespace (and not attached):
 ##   [1] Rtsne_0.15            colorspace_2.0-2      deldir_0.2-10        
@@ -585,33 +823,33 @@ Violin plots of signature scores for the integrated data.
 ##  [25] shiny_1.6.0           sctransform_0.3.2     spatstat.sparse_2.0-0
 ##  [28] BiocManager_1.30.16   compiler_4.1.0        httr_1.4.2           
 ##  [31] Matrix_1.3-4          fastmap_1.1.0         lazyeval_0.2.2       
-##  [34] limma_3.49.4          later_1.2.0           htmltools_0.5.1.1    
-##  [37] tools_4.1.0           igraph_1.2.6          gtable_0.3.0         
-##  [40] glue_1.4.2            RANN_2.6.1            reshape2_1.4.4       
-##  [43] dplyr_1.0.7           Rcpp_1.0.7            scattermore_0.7      
-##  [46] jquerylib_0.1.4       pkgdown_1.6.1         vctrs_0.3.8          
-##  [49] nlme_3.1-152          lmtest_0.9-38         xfun_0.25            
-##  [52] stringr_1.4.0         globals_0.14.0        mime_0.11            
-##  [55] miniUI_0.1.1.1        lifecycle_1.0.0       irlba_2.3.3          
-##  [58] goftest_1.2-2         future_1.21.0         MASS_7.3-54          
-##  [61] zoo_1.8-9             scales_1.1.1          spatstat.core_2.3-0  
-##  [64] ragg_1.1.3            promises_1.2.0.1      spatstat.utils_2.2-0 
-##  [67] parallel_4.1.0        RColorBrewer_1.1-2    yaml_2.2.1           
-##  [70] memoise_2.0.0         reticulate_1.20       pbapply_1.4-3        
-##  [73] gridExtra_2.3         ggplot2_3.3.5         sass_0.4.0           
-##  [76] rpart_4.1-15          stringi_1.7.3         highr_0.9            
-##  [79] desc_1.3.0            rlang_0.4.11          pkgconfig_2.0.3      
-##  [82] systemfonts_1.0.2     matrixStats_0.60.0    evaluate_0.14        
-##  [85] lattice_0.20-44       tensor_1.5            ROCR_1.0-11          
-##  [88] purrr_0.3.4           labeling_0.4.2        patchwork_1.1.1      
-##  [91] htmlwidgets_1.5.3     cowplot_1.1.1         tidyselect_1.1.1     
-##  [94] parallelly_1.27.0     RcppAnnoy_0.0.19      plyr_1.8.6           
-##  [97] magrittr_2.0.1        bookdown_0.23         R6_2.5.0             
-## [100] generics_0.1.0        withr_2.4.2           mgcv_1.8-36          
-## [103] pillar_1.6.2          fitdistrplus_1.1-5    abind_1.4-5          
-## [106] survival_3.2-11       tibble_3.1.3          future.apply_1.8.1   
-## [109] crayon_1.4.1          KernSmooth_2.23-20    utf8_1.2.2           
-## [112] spatstat.geom_2.2-2   plotly_4.9.4.1        rmarkdown_2.10       
+##  [34] later_1.2.0           htmltools_0.5.1.1     tools_4.1.0          
+##  [37] igraph_1.2.6          gtable_0.3.0          glue_1.4.2           
+##  [40] RANN_2.6.1            reshape2_1.4.4        dplyr_1.0.7          
+##  [43] Rcpp_1.0.7            scattermore_0.7       jquerylib_0.1.4      
+##  [46] pkgdown_1.6.1         vctrs_0.3.8           nlme_3.1-152         
+##  [49] lmtest_0.9-38         xfun_0.25             stringr_1.4.0        
+##  [52] globals_0.14.0        mime_0.11             miniUI_0.1.1.1       
+##  [55] lifecycle_1.0.0       irlba_2.3.3           goftest_1.2-2        
+##  [58] future_1.21.0         MASS_7.3-54           zoo_1.8-9            
+##  [61] scales_1.1.1          spatstat.core_2.3-0   ragg_1.1.3           
+##  [64] promises_1.2.0.1      spatstat.utils_2.2-0  parallel_4.1.0       
+##  [67] RColorBrewer_1.1-2    yaml_2.2.1            memoise_2.0.0        
+##  [70] reticulate_1.20       pbapply_1.4-3         gridExtra_2.3        
+##  [73] ggplot2_3.3.5         sass_0.4.0            rpart_4.1-15         
+##  [76] stringi_1.7.3         highr_0.9             desc_1.3.0           
+##  [79] rlang_0.4.11          pkgconfig_2.0.3       systemfonts_1.0.2    
+##  [82] matrixStats_0.60.0    evaluate_0.14         lattice_0.20-44      
+##  [85] tensor_1.5            ROCR_1.0-11           purrr_0.3.4          
+##  [88] labeling_0.4.2        patchwork_1.1.1       htmlwidgets_1.5.3    
+##  [91] cowplot_1.1.1         tidyselect_1.1.1      parallelly_1.27.0    
+##  [94] RcppAnnoy_0.0.19      plyr_1.8.6            magrittr_2.0.1       
+##  [97] bookdown_0.23         R6_2.5.0              generics_0.1.0       
+## [100] withr_2.4.2           mgcv_1.8-36           pillar_1.6.2         
+## [103] fitdistrplus_1.1-5    abind_1.4-5           survival_3.2-11      
+## [106] tibble_3.1.3          future.apply_1.8.1    crayon_1.4.1         
+## [109] KernSmooth_2.23-20    utf8_1.2.2            spatstat.geom_2.2-2  
+## [112] plotly_4.9.4.1        rmarkdown_2.10        locfit_1.5-9.4       
 ## [115] data.table_1.14.0     digest_0.6.27         xtable_1.8-4         
 ## [118] tidyr_1.1.3           httpuv_1.6.1          textshaping_0.3.5    
 ## [121] munsell_0.5.0         viridisLite_0.4.0     bslib_0.2.5.1</code></pre>
