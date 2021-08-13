@@ -515,6 +515,65 @@ col.p <- scales::hue_pal()(nlevels(Idents(NormEpi)))
 ternaryplot(TN2, cex=0.2, pch=16, col=col.p[Idents(NormEpi)], grid=TRUE)
 ```
 
+## Mark genes identification
+
+Here, we use `FindAllMarkers()` to obtain markers for every cluster compared to all remaining cells.
+Same as bofore, we are only interested in the positive markers.
+```{r AllMarkersNormEpi}
+NormEpi.markers <- FindAllMarkers(NormEpi, only.pos = TRUE)
+```
+
+The top 3 marker genes for each of cluster are listed below.
+```{r TopMarkersAll}
+topMarkers.all <- split(NormEpi.markers, NormEpi.markers$cluster)
+top3.all <- lapply(topMarkers.all, head, n=3)
+top3.all <- do.call("rbind", top3.all)
+top3.all
+```
+
+We highlight the expression levels of these markers genes in the UMAP plots for visualization.
+```{r FeaturePlotMarkersAll, fig.cap="Top marker expression visualizations on a UMAP plot.", fig.height=12.5, fig.width=9}
+FeaturePlot(NormEpi, features = top3.all$gene, ncol=3)
+```
+
+
+# Multi-sample differential expression analysis
+
+## Biological variation
+
+In RNA-seq experiments with replicate samples, biological variation represents the variation of the underlying gene abundances between the replicates.
+Accounting for biological variation is crucial in RNA-seq DE analysis.
+Many statistically rigorous methods and software packages have been developed for estimating biological variation and incorporating it into the DE analysis (e.g., edgeR, limma, DESeq2 etc.).
+
+For single cell RNA-seq experiments with biological replicates, one should also take into account the biological variation between different replicate samples where cells are obtained.
+However, applying bulk RNA-seq DE methods directly to single cell RNA-seq data is not appropriate as each cell is not independent biological replicate.
+One of the commonly used methods to account for biological variation between replicates is the "pseudo-bulk" approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together.
+
+## Creating pseudo-bulk samples
+
+We first extract the cluster and sample information from the integrated Seurat object and combine them together.
+The numbers of cells under different combinations of cell cluster and sample are shown below.
+```{r SampClustID}
+sampID <- NormEpi@meta.data$orig.ident
+clustID <- Idents(NormEpi)
+sampClust <- paste(sampID, clustID, sep="_Clst")
+table(sampClust)
+```
+
+We then form pseudo-bulk samples by aggregating the read counts for each gene by cluster-sample combination.
+```{r Aggregate}
+rawCounts <- as.matrix(NormEpi@assays$RNA@counts)
+counts <- t(rowsum(t(rawCounts), group=sampClust))
+```
+
+We create a `DGEList` object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline.
+```{r edgeR}
+library(edgeR)
+y <- DGEList(counts)
+y$samples$group <- as.factor(gsub("^.*_Clst", "", colnames(y)))
+y$samples$Patient <- factor(gsub("_.*$", "", colnames(y)), level=Samples)
+```
+
 
 
 
