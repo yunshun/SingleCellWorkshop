@@ -515,27 +515,6 @@ col.p <- scales::hue_pal()(nlevels(Idents(NormEpi)))
 ternaryplot(TN2, cex=0.2, pch=16, col=col.p[Idents(NormEpi)], grid=TRUE)
 ```
 
-## Mark genes identification
-
-Here, we use `FindAllMarkers()` to obtain markers for every cluster compared to all remaining cells.
-Same as bofore, we are only interested in the positive markers.
-```{r AllMarkersNormEpi}
-NormEpi.markers <- FindAllMarkers(NormEpi, only.pos = TRUE)
-```
-
-The top 3 marker genes for each of cluster are listed below.
-```{r TopMarkersAll}
-topMarkers.all <- split(NormEpi.markers, NormEpi.markers$cluster)
-top3.all <- lapply(topMarkers.all, head, n=3)
-top3.all <- do.call("rbind", top3.all)
-top3.all
-```
-
-We highlight the expression levels of these markers genes in the UMAP plots for visualization.
-```{r FeaturePlotMarkersAll, fig.cap="Top marker expression visualizations on a UMAP plot.", fig.height=12.5, fig.width=9}
-FeaturePlot(NormEpi, features = top3.all$gene, ncol=3)
-```
-
 
 # Multi-sample differential expression analysis
 
@@ -574,8 +553,137 @@ y$samples$group <- as.factor(gsub("^.*_Clst", "", colnames(y)))
 y$samples$Patient <- factor(gsub("_.*$", "", colnames(y)), level=Samples)
 ```
 
+## Filtering
 
+The library size (total number of reads) of each pseudo-bulk sample highly depends on the number of cells in that sample.
+We remove the samples with library size less than 50,000.
+```{r edgeR_Filtering}
+keep.sample <- y$samples$lib.size > 5e4
+table(keep.sample)
+y <- y[,keep.sample]
+```
 
+The gene filtering is performed by the `filterByExpr` function in edgeR.
+```{r edgeR_Filtering2}
+keep.gene <- filterByExpr(y)
+table(keep.gene)
+y <- y[keep.gene,,keep=FALSE]
+```
+
+## Normalization
+
+We perform TMM normalization to adjust for the compositional biases between the samples.
+The normalization factors are listed below.
+```{r TMM}
+y <- calcNormFactors(y)
+y$samples
+```
+
+## Data exploration
+
+We produce an MDS plot to visualize the relationship between all the pseudo-bulk samples.
+```{r MDS, fig.cap="MDS plots of the pseudo-bulk samples.", fig.height=4.5, fig.width=9}
+Cluster <- factor(y$samples$group)
+Patient <- y$samples$Patient
+par(mfrow=c(1,2))
+plotMDS(y, pch=16, col=col.p[Cluster], main="By cluster")
+legend("bottomleft", legend=paste("Cluster", levels(Cluster)), pch=16, col=col.p)
+plotMDS(y, pch=16, col=Patient, main="By sample")
+legend("bottomleft", legend=levels(Patient), pch=16, col=1:5)
+```
+From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level.
+We also notice that samples from cluster 0 and 5 have similar expression pattern, whereas samples from cluster 1 and 4 are close to each other.
+
+We use the cluster and sample information to create a design matrix as follows.
+```{r design}
+design <- model.matrix(~ 0 + Cluster + Patient)
+colnames(design)
+```
+
+## Dispersion estimation
+
+We estimate negative binomial dispersions and quasi-likelihood dispersions as follows.
+```{r dispersion}
+y <- estimateDisp(y, design)
+fit <- glmQLFit(y, design)
+```
+
+The dispersions can be examined in the following plots.
+```{r plotDisp, fig.cap="BCV and quasi-likelihood dispersion plots.", fig.height=4.5, fig.width=9}
+par(mfrow=c(1,2))
+plotBCV(y)
+plotQLDisp(fit)
+```
+
+## Differential expression
+
+For the differential expression analysis, we are particularly interested in the genes that are up-regulated in each cluster compared with all the other clusters.
+Therefore, we create a contrast matrix as follows.
+Each column of the matrix represents a testing constrast that compares one cluster with the average of all the other clusters.
+```{r contrast}
+ncls <- nlevels(Idents(NormEpi))
+contr <- rbind( matrix(1/(1-ncls), ncls, ncls),
+                matrix(0, ncol(design)-ncls, ncls) )
+diag(contr) <- 1
+rownames(contr) <- colnames(design)
+colnames(contr) <- paste0("Cluster", levels(Idents(NormEpi)))
+contr
+```
+
+We then perform quasi-likelihood F-test under each contrast.
+In order to focus on genes with strong DE signal, we test for the differences above a fold-change threshold of 1.3.
+This is done by calling the `glmTreat` function in edgeR.
+The results of all the tests are stored as a list of `DGELRT` objects.
+```{r DETest}
+test <- list()
+for(i in 1:ncls) test[[i]] <- glmTreat(fit, contrast=contr[,i], lfc=log2(1.3))
+names(test) <- colnames(contr)
+```
+
+The number of DE genes under each comparison can be viewed by the `decideTestsDGE` function.
+```{r decideTest}
+dtest <- lapply(lapply(test, decideTestsDGE), summary)
+dtest <- do.call("cbind", dtest)
+colnames(dtest) <- colnames(contr)
+dtest
+```
+
+We can view the top DE results using the `topTags` function.
+For example, to see the top 20 DE genes of cluster 2 vs all the other clusters, we use the following line.
+```{r topTags_cluster2}
+topTags(test$Cluster2, n=20L)
+```
+
+We can extract the top 15 marker genes (up-regulated only) of each cluster as follows.
+```{r topMarkersPB}
+top <- 15
+pseudoMakers <- list()
+for(i in 1:ncls) {
+    res <- test[[i]]$table
+    ord <- order(log(res$PValue)*sign(res$logFC))
+    pseudoMakers[[i]] <- rownames(y)[ord[1:top]]
+}
+Markers <- unlist(pseudoMakers)
+Markers <- Markers[!duplicated(Markers)]
+```
+
+Then we create a heatmap using `pheatmap` for those top marker genes.
+The standardized log-CPM values of the marker genes are used for the expression levels on the heatmap.
+Genes and samples on the heatmap are reordered by the Ward method of hierarchical clustering, which correctly groups samples by cell cluster.
+```{r HeatmapPB, fig.cap="Heat map of the top marker genes.", fig.height=11, fig.width=7.5}
+library(pheatmap)
+lcpm <- cpm(y, log=TRUE)
+expr <- t(scale(t(lcpm[Markers, ])))
+annot <- data.frame(Cluster=paste0("Cluster ", Cluster), Patient=Patient)
+rownames(annot) <- colnames(expr)
+ann_colors <- list(Cluster=col.p[1:ncls], Patient=col.p[1:length(Samples)])
+names(ann_colors$Cluster) <- paste0("Cluster ", levels(Idents(NormEpi)))
+names(ann_colors$Patient) <- Samples
+pheatmap(expr, color=colorRampPalette(c("blue","white","red"))(100), border_color="NA",
+    breaks=seq(-2,2,length.out=101), cluster_cols=TRUE, scale="none", fontsize_row=7,
+    show_colnames=FALSE, treeheight_row=70, treeheight_col=70, cutree_cols=ncls,
+    clustering_method="ward.D2", annotation_col=annot, annotation_colors=ann_colors)
+```
 
 
 # Session info
