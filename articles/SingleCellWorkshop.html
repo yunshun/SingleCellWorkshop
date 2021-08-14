@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.9</span>
       </span>
     </div>
 
@@ -169,8 +169,8 @@
 ## N1469_AAACGCACTCAGGT-1      N1469       7218         2102       2.13</code></pre>
 <p>Scatter plots can be produced for visualizing some of the QC metrics.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"percent.mt"</span><span class="op">)</span>
-<span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"nFeature_RNA"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"percent.mt"</span>, plot.cor<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"nFeature_RNA"</span>, plot.cor<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">+</span> <span class="va">plot2</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/QC_Scatter_plot-1.png" alt="Scatter plots of QC metrics." width="864"><p class="caption">
@@ -481,17 +481,17 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 <pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
 ## 
 ## Number of nodes: 13644
-## Number of edges: 572889
+## Number of edges: 573287
 ## 
 ## Running Louvain algorithm...
-## Maximum modularity in 10 random starts: 0.9642
+## Maximum modularity in 10 random starts: 0.9645
 ## Number of communities: 6
 ## Elapsed time: 2 seconds</code></pre>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
 ##    0    1    2    3    4    5 
-## 5520 5446 2040  418  153   67</code></pre>
+## 5526 5438 1979  419  214   68</code></pre>
 <p>The clustering results are shown in the UMAP plot below.</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -549,9 +549,9 @@ Violin plots of signature scores for the integrated data.
 </div>
 </div>
 </div>
-<div id="multi-sample-differential-expression-analysis" class="section level1">
+<div id="differential-expression-by-pseudo-bulk" class="section level1">
 <h1 class="hasAnchor">
-<a href="#multi-sample-differential-expression-analysis" class="anchor"></a>Multi-sample differential expression analysis</h1>
+<a href="#differential-expression-by-pseudo-bulk" class="anchor"></a>Differential expression by pseudo-bulk</h1>
 <div id="biological-variation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#biological-variation" class="anchor"></a>Biological variation</h2>
@@ -569,15 +569,15 @@ Violin plots of signature scores for the integrated data.
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">sampClust</span><span class="op">)</span></code></pre></div>
 <pre><code>## sampClust
 ## N0123_Clst0 N0123_Clst1 N0123_Clst2 N0123_Clst3 N0123_Clst4 N0123_Clst5 N0230_Clst0 
-##         839        1563         366          12          41          19        1033 
+##         839        1563         358          12          49          19        1029 
 ## N0230_Clst1 N0230_Clst2 N0230_Clst3 N0230_Clst4 N0230_Clst5 N0280_Clst0 N0280_Clst1 
-##         561         156          77          15          15         346         392 
+##         562         139          78          33          16         346         392 
 ## N0280_Clst2 N0280_Clst3 N0280_Clst4 N0280_Clst5 N1105_Clst0 N1105_Clst1 N1105_Clst2 
-##         316          39          30           3        1597        2469         784 
+##         302          39          44           3        1601        2465         771 
 ## N1105_Clst3 N1105_Clst4 N1105_Clst5 N1469_Clst0 N1469_Clst1 N1469_Clst2 N1469_Clst3 
-##          80          22           1        1705         461         418         210 
+##          80          35           1        1711         456         409         210 
 ## N1469_Clst4 N1469_Clst5 
-##          45          29</code></pre>
+##          53          29</code></pre>
 <p>We then form pseudo-bulk samples by aggregating the read counts for each gene by cluster-sample combination.</p>
 <div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">rawCounts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span><span class="op">)</span>
@@ -607,7 +607,7 @@ Violin plots of signature scores for the integrated data.
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.gene</span><span class="op">)</span></code></pre></div>
 <pre><code>## keep.gene
 ## FALSE  TRUE 
-##  8775 10454</code></pre>
+##  8955 10274</code></pre>
 <div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">keep.gene</span>,,keep<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></code></pre></div>
 </div>
@@ -619,34 +619,34 @@ Violin plots of signature scores for the integrated data.
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html">calcNormFactors</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="va">y</span><span class="op">$</span><span class="va">samples</span></code></pre></div>
 <pre><code>##             group lib.size norm.factors Patient
-## N0123_Clst0     0  4252753        0.914   N0123
-## N0123_Clst1     1  5913960        1.033   N0123
-## N0123_Clst2     2   933292        0.870   N0123
-## N0123_Clst4     4   144308        1.135   N0123
-## N0123_Clst5     5   155185        1.155   N0123
-## N0230_Clst0     0  4261533        1.110   N0230
-## N0230_Clst1     1  1935170        1.140   N0230
-## N0230_Clst2     2   452640        1.031   N0230
-## N0230_Clst3     3   214246        1.115   N0230
-## N0230_Clst4     4    67372        1.410   N0230
-## N0230_Clst5     5    80893        1.437   N0230
-## N0280_Clst0     0  3774944        0.729   N0280
-## N0280_Clst1     1  2031958        1.014   N0280
-## N0280_Clst2     2  1382642        0.875   N0280
-## N0280_Clst3     3   188620        1.039   N0280
-## N0280_Clst4     4   180587        1.185   N0280
-## N0280_Clst5     5    55465        1.251   N0280
-## N1105_Clst0     0 18342441        0.767   N1105
-## N1105_Clst1     1 15781150        0.968   N1105
-## N1105_Clst2     2  3730398        0.778   N1105
-## N1105_Clst3     3   430622        0.908   N1105
-## N1105_Clst4     4   172690        1.219   N1105
-## N1469_Clst0     0 10459180        0.859   N1469
-## N1469_Clst1     1  2315185        0.923   N1469
-## N1469_Clst2     2  1745234        0.831   N1469
-## N1469_Clst3     3  1170267        0.776   N1469
-## N1469_Clst4     4   234042        0.933   N1469
-## N1469_Clst5     5   261094        1.034   N1469</code></pre>
+## N0123_Clst0     0  4250653        0.908   N0123
+## N0123_Clst1     1  5908620        1.052   N0123
+## N0123_Clst2     2   914352        0.906   N0123
+## N0123_Clst4     4   162664        1.184   N0123
+## N0123_Clst5     5   155062        1.210   N0123
+## N0230_Clst0     0  4251771        0.982   N0230
+## N0230_Clst1     1  1930372        1.108   N0230
+## N0230_Clst2     2   418705        1.061   N0230
+## N0230_Clst3     3   216976        1.149   N0230
+## N0230_Clst4     4   107137        1.277   N0230
+## N0230_Clst5     5    81688        1.624   N0230
+## N0280_Clst0     0  3772988        0.740   N0280
+## N0280_Clst1     1  2029941        1.082   N0280
+## N0280_Clst2     2  1342851        0.913   N0280
+## N0280_Clst3     3   188352        0.996   N0280
+## N0280_Clst4     4   219343        1.197   N0280
+## N0280_Clst5     5    55428        1.218   N0280
+## N1105_Clst0     0 18414657        0.750   N1105
+## N1105_Clst1     1 15687217        0.968   N1105
+## N1105_Clst2     2  3680521        0.779   N1105
+## N1105_Clst3     3   430315        0.899   N1105
+## N1105_Clst4     4   220814        1.176   N1105
+## N1469_Clst0     0 10510089        0.727   N1469
+## N1469_Clst1     1  2259472        0.886   N1469
+## N1469_Clst2     2  1715710        0.842   N1469
+## N1469_Clst3     3  1169207        0.790   N1469
+## N1469_Clst4     4   261270        0.994   N1469
+## N1469_Clst5     5   260898        1.085   N1469</code></pre>
 </div>
 <div id="data-exploration" class="section level2">
 <h2 class="hasAnchor">
@@ -661,7 +661,7 @@ Violin plots of signature scores for the integrated data.
 <span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">Patient</span>, main<span class="op">=</span><span class="st">"By sample"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Patient</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="1056"><p class="caption">
 MDS plots of the pseudo-bulk samples.
 </p>
 </div>
@@ -726,34 +726,34 @@ BCV and quasi-likelihood dispersion plots.
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">dtest</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span>
 <span class="va">dtest</span></code></pre></div>
 <pre><code>##        Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
-## Down        574      919     1506     1109     1481      497
-## NotSig     8599     7161     6685     7692     7401     9380
-## Up         1281     2374     2263     1653     1572      577</code></pre>
+## Down        454      970     1703     1106     1600      637
+## NotSig     8025     6847     6321     7558     7178     9113
+## Up         1795     2457     2250     1610     1496      524</code></pre>
 <p>We can view the top DE results using the <code>topTags</code> function. For example, to see the top 20 DE genes of cluster 2 vs all the other clusters, we use the following line.</p>
 <div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/topTags.html">topTags</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">Cluster2</span>, n<span class="op">=</span><span class="fl">20L</span><span class="op">)</span></code></pre></div>
 <pre><code>## Coefficient:  -0.2*Cluster0 -0.2*Cluster1 1*Cluster2 -0.2*Cluster3 -0.2*Cluster4 -0.2*Cluster5 
 ##          logFC unshrunk.logFC logCPM   PValue      FDR
-## ACTG2     7.72           7.73   9.21 2.82e-26 2.95e-22
-## SERPINB5  6.28           6.30   6.56 3.58e-25 1.87e-21
-## KRT5      6.51           6.52   8.98 2.57e-24 7.20e-21
-## TPM2      5.77           5.78   8.27 2.76e-24 7.20e-21
-## DLL1      5.38           5.39   5.96 9.51e-24 1.99e-20
-## DKK3      5.77           5.78   6.70 1.24e-23 2.17e-20
-## CD200     6.11           6.13   6.52 1.57e-23 2.34e-20
-## KRT14     7.39           7.39  10.84 1.16e-22 1.51e-19
-## TNS4      4.96           4.97   6.25 1.76e-21 2.04e-18
-## ACTA2     6.22           6.23   8.45 2.66e-21 2.78e-18
-## GPC1      4.65           4.66   6.31 3.87e-21 3.68e-18
-## NRP2      5.92           5.96   6.08 4.25e-21 3.70e-18
-## COL17A1   8.93          16.15   5.34 4.69e-21 3.77e-18
-## CCND2     7.07          10.60   5.68 5.44e-21 4.06e-18
-## CAV1      4.76           4.76   8.32 6.77e-21 4.72e-18
-## MSRB3     5.27           5.29   5.38 7.63e-21 4.99e-18
-## TUBB2B    4.44           4.44   7.58 1.00e-20 6.17e-18
-## OXTR      5.35           5.37   6.25 1.14e-20 6.61e-18
-## DST       3.84           3.84   8.71 2.04e-20 1.12e-17
-## FAM126A   4.41           4.42   5.87 2.87e-20 1.50e-17</code></pre>
+## ACTG2     7.81           7.82   9.22 1.33e-25 1.36e-21
+## SERPINB5  6.28           6.30   6.55 1.13e-24 5.83e-21
+## KRT5      6.28           6.28   8.99 2.08e-24 7.13e-21
+## DLL1      5.40           5.42   5.94 7.71e-24 1.98e-20
+## DKK3      5.72           5.73   6.70 1.24e-23 2.56e-20
+## CD200     6.18           6.21   6.50 2.29e-23 3.91e-20
+## TPM2      5.71           5.72   8.27 2.67e-23 3.91e-20
+## CCND2     6.25           6.31   5.67 2.04e-22 2.62e-19
+## TNS4      5.05           5.07   6.24 9.05e-22 1.03e-18
+## GPC1      4.73           4.73   6.29 1.53e-21 1.57e-18
+## KRT14     7.14           7.14  10.86 1.87e-21 1.74e-18
+## NRP2      5.98           6.02   6.06 4.28e-21 3.60e-18
+## COL17A1   8.91          16.14   5.32 4.55e-21 3.60e-18
+## OXTR      5.45           5.46   6.23 6.57e-21 4.82e-18
+## CAV1      4.83           4.83   8.31 7.15e-21 4.90e-18
+## FAM126A   4.48           4.50   5.84 1.01e-20 6.49e-18
+## MSRB3     5.31           5.34   5.37 1.24e-20 7.52e-18
+## ACTA2     6.00           6.00   8.46 1.90e-20 1.09e-17
+## TUBB2B    4.45           4.45   7.58 2.78e-20 1.50e-17
+## DST       3.83           3.83   8.71 3.95e-20 2.03e-17</code></pre>
 <p>We can extract the top 15 marker genes (up-regulated only) of each cluster as follows.</p>
 <div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">top</span> <span class="op">&lt;-</span> <span class="fl">15</span>
@@ -846,7 +846,7 @@ Heat map of the top marker genes.
 ##  [94] RcppAnnoy_0.0.19      plyr_1.8.6            magrittr_2.0.1       
 ##  [97] bookdown_0.23         R6_2.5.0              generics_0.1.0       
 ## [100] withr_2.4.2           mgcv_1.8-36           pillar_1.6.2         
-## [103] fitdistrplus_1.1-5    abind_1.4-5           survival_3.2-11      
+## [103] fitdistrplus_1.1-5    abind_1.4-5           survival_3.2-12      
 ## [106] tibble_3.1.3          future.apply_1.8.1    crayon_1.4.1         
 ## [109] KernSmooth_2.23-20    utf8_1.2.2            spatstat.geom_2.2-2  
 ## [112] plotly_4.9.4.1        rmarkdown_2.10        locfit_1.5-9.4       
