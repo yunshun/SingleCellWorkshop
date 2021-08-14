@@ -51,7 +51,7 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 #knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE)
 options(digits=3)
 options(width=90)
-#library(BiocStyle)
+library(BiocStyle)
 ```
 
 ## Downloading the read counts
@@ -134,9 +134,9 @@ head(N1469@meta.data)
 ```
 
 Scatter plots can be produced for visualizing some of the QC metrics.
-```{r QC_Scatter_plot, fig.cap="Scatter plots of QC metrics.", fig.height=4.5, fig.width=9}
-plot1 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+```{r QC_Scatter_plot, fig.cap="Scatter plots of QC metrics.", fig.height=4, fig.width=9}
+plot1 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "percent.mt", plot.cor=FALSE)
+plot2 <- FeatureScatter(N1469, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", plot.cor=FALSE)
 plot1 + plot2
 ```
 
@@ -168,7 +168,7 @@ N1469 <- FindVariableFeatures(N1469, selection.method="vst", nfeatures=1500)
 ```
 
 A mean-variance plot can be produced for visualizing the top variable genes.
-```{r HVG_plot, fig.cap="A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled.", fig.height=5.5, fig.width=7}
+```{r HVG_plot, fig.cap="A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled.", fig.height=5, fig.width=7}
 top50 <- head(VariableFeatures(N1469), 50)
 plot1 <- VariableFeaturePlot(N1469)
 plot2 <- LabelPoints(plot=plot1, points=top50, repel=TRUE)
@@ -194,7 +194,7 @@ The top PCs would capture the dominant factors of heterogeneity in the data set.
 Here, we perform PCA on the scaled data. 
 By default, only the previously determined 1500 HVGs are used and the first 50 PCs are computed and returned.
 The PCA results can be visualized in a PCA plot.
-```{r PCA, fig.cap="PCA plot showing the first two principal components of the data.", fig.height=6, fig.width=7}
+```{r PCA, fig.cap="PCA plot showing the first two principal components of the data.", fig.height=5.5, fig.width=7}
 N1469 <- RunPCA(N1469, features=VariableFeatures(N1469))
 DimPlot(N1469, reduction = "pca")
 ```
@@ -516,7 +516,7 @@ ternaryplot(TN2, cex=0.2, pch=16, col=col.p[Idents(NormEpi)], grid=TRUE)
 ```
 
 
-# Multi-sample differential expression analysis
+# Differential expression by pseudo-bulk
 
 ## Biological variation
 
@@ -582,7 +582,7 @@ y$samples
 ## Data exploration
 
 We produce an MDS plot to visualize the relationship between all the pseudo-bulk samples.
-```{r MDS, fig.cap="MDS plots of the pseudo-bulk samples.", fig.height=4.5, fig.width=9}
+```{r MDS, fig.cap="MDS plots of the pseudo-bulk samples.", fig.height=5.5, fig.width=11}
 Cluster <- factor(y$samples$group)
 Patient <- y$samples$Patient
 par(mfrow=c(1,2))
