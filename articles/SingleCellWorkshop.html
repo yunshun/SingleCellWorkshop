@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.10</span>
       </span>
     </div>
 
@@ -76,7 +76,7 @@
       Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia<br><a class="author_email" href="mailto:#"></a><a href="mailto:yuchen@wehi.edu.au" class="email">yuchen@wehi.edu.au</a>
       </address>
                   
-            <h4 class="date">Aug 13, 2021</h4>
+            <h4 class="date">Aug 15, 2021</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/yunshun/SingleCellWorkshop/blob/master/vignettes/SingleCellWorkshop.Rmd"><code>vignettes/SingleCellWorkshop.Rmd</code></a></small>
       <div class="hidden name"><code>SingleCellWorkshop.Rmd</code></div>
@@ -330,7 +330,7 @@ UMAP visualization where cells are coloured by cell cluster.
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="va">top3</span><span class="op">$</span><span class="va">gene</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/FeaturePlotMarkers-1.png" alt="Top marker expression visualizations on a UMAP plot." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/FeaturePlotMarkers-1.png" alt="Top marker expression visualizations on a UMAP plot." width="1056"><p class="caption">
 Top marker expression visualizations on a UMAP plot.
 </p>
 </div>
@@ -371,14 +371,14 @@ A dot plot of top marker genes of each cluster.
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/SigScorePlot-1.png" alt="Signature scores." width="816"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScorePlot-1.png" alt="Signature scores." width="960"><p class="caption">
 Signature scores.
 </p>
 </div>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot-1.png" alt="Violin plots of signature scores." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
 Violin plots of signature scores.
 </p>
 </div>
@@ -521,14 +521,14 @@ UMAP visualization of the integrated data where cells are coloured by cluster.
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/SigScorePlot2-1.png" alt="Signature scores for the integrated data." width="816"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScorePlot2-1.png" alt="Signature scores for the integrated data." width="960"><p class="caption">
 Signature scores for the integrated data.
 </p>
 </div>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot2-1.png" alt="Violin plots of signature scores." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot2-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
 Violin plots of signature scores.
 </p>
 </div>
@@ -549,9 +549,9 @@ Violin plots of signature scores for the integrated data.
 </div>
 </div>
 </div>
-<div id="differential-expression-by-pseudo-bulk" class="section level1">
+<div id="differential-expression-analysis-by-pseudo-bulk" class="section level1">
 <h1 class="hasAnchor">
-<a href="#differential-expression-by-pseudo-bulk" class="anchor"></a>Differential expression by pseudo-bulk</h1>
+<a href="#differential-expression-analysis-by-pseudo-bulk" class="anchor"></a>Differential expression analysis by pseudo-bulk</h1>
 <div id="biological-variation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#biological-variation" class="anchor"></a>Biological variation</h2>
@@ -686,7 +686,7 @@ MDS plots of the pseudo-bulk samples.
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotBCV.html">plotBCV</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotQLDisp.html">plotQLDisp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="SingleCellWorkshop_files/figure-html/plotDisp-1.png" alt="BCV and quasi-likelihood dispersion plots." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/plotDisp-1.png" alt="BCV and quasi-likelihood dispersion plots." width="1056"><p class="caption">
 BCV and quasi-likelihood dispersion plots.
 </p>
 </div>
