@@ -4,7 +4,7 @@ author:
 - name: Yunshun Chen
   affiliation: Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia
   email: yuchen@wehi.edu.au
-date: Aug 13, 2021
+date: Aug 15, 2021
 output:
   BiocStyle::html_document:
     toc: true
@@ -288,7 +288,7 @@ top3
 ```
 
 The expression level of the top marker genes can be overlaid on the UMAP plots for visualization.
-```{r FeaturePlotMarkers, fig.cap="Top marker expression visualizations on a UMAP plot.", fig.height=12.5, fig.width=9}
+```{r FeaturePlotMarkers, fig.cap="Top marker expression visualizations on a UMAP plot.", fig.height=15, fig.width=11}
 FeaturePlot(N1469, features = top3$gene, ncol=3)
 ```
 
@@ -338,10 +338,10 @@ SigScores <- do.call("cbind", SigScore)
 colnames(SigScores) <- c("Basal", "LP", "ML", "Stroma")
 N1469@meta.data <- cbind(N1469@meta.data, SigScores)
 ```
-```{r SigScorePlot, fig.cap="Signature scores.", fig.height=7, fig.width=8.5}
+```{r SigScorePlot, fig.cap="Signature scores.", fig.height=8.5, fig.width=10}
 FeaturePlot(N1469, features = colnames(SigScores))
 ```
-```{r SigScoreViolinPlot, fig.cap="Violin plots of signature scores.", fig.height=6.5, fig.width=9}
+```{r SigScoreViolinPlot, fig.cap="Violin plots of signature scores.", fig.height=8, fig.width=11}
 VlnPlot(N1469, features = colnames(SigScores), ncol=2, pt.size=0.1)
 ```
 It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells.
@@ -495,10 +495,10 @@ NormEpi@meta.data <- cbind(NormEpi@meta.data, SigScores2)
 ```
 
 We then produce feature plots and violin plots to visualize the signature scores.
-```{r SigScorePlot2, fig.cap="Signature scores for the integrated data.", fig.height=7, fig.width=8.5}
+```{r SigScorePlot2, fig.cap="Signature scores for the integrated data.", fig.height=8.5, fig.width=10}
 FeaturePlot(NormEpi, features = colnames(SigScores2))
 ```
-```{r SigScoreViolinPlot2, fig.cap="Violin plots of signature scores.", fig.height=6.5, fig.width=9}
+```{r SigScoreViolinPlot2, fig.cap="Violin plots of signature scores.", fig.height=8, fig.width=11}
 VlnPlot(NormEpi, features = colnames(SigScores2), ncol=2, pt.size=0.1)
 ```
 It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells.
@@ -516,7 +516,7 @@ ternaryplot(TN2, cex=0.2, pch=16, col=col.p[Idents(NormEpi)], grid=TRUE)
 ```
 
 
-# Differential expression by pseudo-bulk
+# Differential expression analysis by pseudo-bulk
 
 ## Biological variation
 
@@ -609,7 +609,7 @@ fit <- glmQLFit(y, design)
 ```
 
 The dispersions can be examined in the following plots.
-```{r plotDisp, fig.cap="BCV and quasi-likelihood dispersion plots.", fig.height=4.5, fig.width=9}
+```{r plotDisp, fig.cap="BCV and quasi-likelihood dispersion plots.", fig.height=5.5, fig.width=11}
 par(mfrow=c(1,2))
 plotBCV(y)
 plotQLDisp(fit)
