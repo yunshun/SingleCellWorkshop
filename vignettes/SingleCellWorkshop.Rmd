@@ -4,7 +4,7 @@ author:
 - name: Yunshun Chen
   affiliation: Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia
   email: yuchen@wehi.edu.au
-date: Aug 16, 2021
+date: Aug 17, 2021
 vignette: >
   %\VignetteIndexEntry{Integration analysis of multi-sample single cell RNA-seq experiment}
   %\VignetteEngine{knitr::rmarkdown}
@@ -47,6 +47,7 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 #knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE)
 options(digits=3)
 options(width=90)
+set.seed(2021)
 ```
 
 ## Downloading the read counts
