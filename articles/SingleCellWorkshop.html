@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.11</span>
       </span>
     </div>
 
@@ -76,7 +76,7 @@
       Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia<br><a class="author_email" href="mailto:#"></a><a href="mailto:yuchen@wehi.edu.au" class="email">yuchen@wehi.edu.au</a>
       </address>
                   
-            <h4 class="date">Aug 15, 2021</h4>
+            <h4 class="date">Aug 16, 2021</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/yunshun/SingleCellWorkshop/blob/master/vignettes/SingleCellWorkshop.Rmd"><code>vignettes/SingleCellWorkshop.Rmd</code></a></small>
       <div class="hidden name"><code>SingleCellWorkshop.Rmd</code></div>
@@ -94,7 +94,7 @@
 <a href="#introduction" class="anchor"></a>Introduction</h1>
 <p>Single-cell RNA sequencing (scRNA-seq) has become a widely used technique that allows researchers to profile the gene expression and study molecular biology at the cellular level. It provides biological resolution that cannot be achieved with conventional bulk RNA-seq experiments on cell populations.</p>
 <p>Here, we provide a detailed workflow for analyzing the 10X single cell RNA-seq data from a single cell RNA expression atlas of human breast tissue <span class="citation">(Pal et al. 2021)</span>. This cell atlas explores the cellular heterogeneity of human mammary gland across different states including normal, pre-neoplastic and cancerous states.</p>
-<p>We will be using part of this cell atlas data to demonstrate how to perform a standard analysis for examining one single cell sample, an integration analysis for exploring the cellular heterogeneity across multiple samples, and how to perform differential expression analysis using pseudo-bulk approach. Most of the analysis will be performed using the <em>Seurat</em> package.</p>
+<p>We will be using part of this cell atlas data to demonstrate how to perform a standard analysis for examining one single cell sample, an integration analysis for exploring the cellular heterogeneity across multiple samples, and how to perform differential expression analysis using pseudo-bulk approach. Most of the analysis will be performed using the <em>Seurat</em> package <span class="citation">(Satija et al. 2015)</span>.</p>
 </div>
 <div id="preliminary" class="section level1">
 <h1 class="hasAnchor">
@@ -103,12 +103,12 @@
 <h2 class="hasAnchor">
 <a href="#pre-processing-the-raw-data" class="anchor"></a>Pre-processing the raw data</h2>
 <p>The raw 10X data come in BCL format. They need to be pre-processed by software tools such as <em>cellranger</em>.</p>
-<p>We use <em>cellranger</em> to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell. The entire analysis in this workflow is conducted within the R environment using the outputs from <em>cellranger</em>. We do not cover the details of running <code>cellranger</code> as they are beyond the scope of this workflow. The information of how to run <code>cellranger</code> is available at .</p>
+<p>We use <em>cellranger</em> to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell. The entire analysis in this workflow is conducted within the R environment using the outputs from <em>cellranger</em>. We do not cover the details of running <em>cellranger</em> as they are beyond the scope of this workflow. The information of how to run <em>cellranger</em> is available at .</p>
 </div>
 <div id="downloading-the-read-counts" class="section level2">
 <h2 class="hasAnchor">
 <a href="#downloading-the-read-counts" class="anchor"></a>Downloading the read counts</h2>
-<p>In this workshop, we will be using five samples from this published study. These five samples correspond to five individual patients with the following Ids: <em>N1469</em>, <em>N0280</em>, <em>N1105</em>, <em>N0230</em> and <em>N0123</em>. The accession numbers of the five samples are GSM4909258, GSM4909255, GSM4909260, GSM4909264 and GSM4909267, respectively.</p>
+<p>In this workshop, we will be using five samples from this published study <span class="citation">(Pal et al. 2021)</span>. These five samples correspond to five individual patients with the following Ids: N1469, N0280, N1105, N0230 and N0123. The accession numbers of the five samples are GSM4909258, GSM4909255, GSM4909260, GSM4909264 and GSM4909267, respectively.</p>
 <p>We first create a <code>Data</code> folder under the current working directory. Then we make five subfolders with the patient Ids as the folder names under the <code>Data</code> folder.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"N1469"</span>, <span class="st">"N0280"</span>, <span class="st">"N1105"</span>, <span class="st">"N0230"</span>, <span class="st">"N0123"</span><span class="op">)</span>
@@ -140,25 +140,24 @@
 <div id="read-in-the-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#read-in-the-data" class="anchor"></a>Read in the data</h2>
-<p>We load the Seurt package and read in the 10X data for Patient N1469. The object <code>N1469.data</code> is a sparse matrix containing the raw count data of Patient N1469. Rows are features (genes) and columns are cells. By default, the column names of the data are the cell barcodes. To distinguish cells from different patients in the later analysis, the patient Id is added as a prefix to the column names.</p>
+<p>We load the Seurt package and read in the 10X data for Patient N1469. The object <code>N1469.data</code> is a sparse matrix containing the raw count data of Patient N1469. Rows are features (genes) and columns are cells. By default, the column names of the data are the cell barcodes. To distinguish cells from different patients in the integration analysis later on, the patient Id is added as a prefix to the column names.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat">Seurat</a></span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">N1469.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/Read10X.html">Read10X</a></span><span class="op">(</span>data.dir <span class="op">=</span> <span class="st">"Data/N1469"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat">Seurat</a></span><span class="op">)</span>
+<span class="va">N1469.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/Read10X.html">Read10X</a></span><span class="op">(</span>data.dir <span class="op">=</span> <span class="st">"Data/N1469"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">N1469.data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"N1469"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">N1469.data</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span></code></pre></div>
 <p>We then create a Seurat object <code>N1469</code>. Genes expressed in less than 3 cells are removed. Cells with at least 200 detected genes are kept in the analysis.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/CreateSeuratObject.html">CreateSeuratObject</a></span><span class="op">(</span>counts<span class="op">=</span><span class="va">N1469.data</span>, project<span class="op">=</span><span class="st">"N1469"</span>, min.cells<span class="op">=</span><span class="fl">3</span>, min.features<span class="op">=</span><span class="fl">200</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="quality-control" class="section level2">
 <h2 class="hasAnchor">
 <a href="#quality-control" class="anchor"></a>Quality control</h2>
 <p>Quality control is essential for scRNA-seq analysis. Cells of low quality and genes of low expression shall be removed prior to the analysis.</p>
-<p>Two common measures of cell quality are the library size and the number of expressed genes in each cell. The number of unique genes and total molecules (library size) are automatically calculated during <code><a href="https://satijalab.org/seurat/reference/CreateSeuratObject.html">CreateSeuratObject()</a></code>. Another measure to look at is the proportion of reads from mitochondrial genes in each cell. Cells with higher mitochondrial content are more prone to die, and hence should also be from the analysis. Here, we calculate the percentages of reads from mitochondrial genes and store them in the metadata of the Seurat object. We use the set of all genes starting with MT- as a set of mitochondrial genes.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>Two common measures of cell quality are the library size and the number of expressed genes in each cell. The number of unique genes and total molecules (library size) are automatically calculated during <code><a href="https://satijalab.org/seurat/reference/CreateSeuratObject.html">CreateSeuratObject()</a></code>. Another measure to look at is the proportion of reads from mitochondrial genes in each cell. Cells with higher mitochondrial content are more prone to die, and hence should also be from the analysis <span class="citation">(Ilicic et al. 2016)</span>. Here, we calculate the percentages of reads from mitochondrial genes and store them in the metadata of the Seurat object. We use the set of all genes starting with MT- as a set of mitochondrial genes.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span><span class="op">[[</span><span class="st">"percent.mt"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/PercentageFeatureSet.html">PercentageFeatureSet</a></span><span class="op">(</span><span class="va">N1469</span>, pattern <span class="op">=</span> <span class="st">"^MT-"</span><span class="op">)</span></code></pre></div>
 <p>The QC metrics of a Seurat object can be viewed as follows.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">@</span><span class="va">meta.data</span><span class="op">)</span></code></pre></div>
 <pre><code>##                        orig.ident nCount_RNA nFeature_RNA percent.mt
 ## N1469_AAACATACGGAGCA-1      N1469       7459         1870       2.65
@@ -168,7 +167,7 @@
 ## N1469_AAACCGTGCATGAC-1      N1469       3908         1294       5.12
 ## N1469_AAACGCACTCAGGT-1      N1469       7218         2102       2.13</code></pre>
 <p>Scatter plots can be produced for visualizing some of the QC metrics.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"percent.mt"</span>, plot.cor<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"nFeature_RNA"</span>, plot.cor<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">+</span> <span class="va">plot2</span></code></pre></div>
@@ -178,7 +177,7 @@ Scatter plots of QC metrics.
 </p>
 </div>
 <p>For this particular data, we filter cells that have unique feature less than 500 and with &gt;20% mitochondrial counts.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">N1469</span>, subset <span class="op">=</span> <span class="va">nFeature_RNA</span> <span class="op">&gt;</span> <span class="fl">500</span> <span class="op">&amp;</span> <span class="va">percent.mt</span> <span class="op">&lt;</span> <span class="fl">20</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="normalization" class="section level2">
@@ -186,7 +185,7 @@ Scatter plots of QC metrics.
 <a href="#normalization" class="anchor"></a>Normalization</h2>
 <p>After cell filtering, the next step is normalization. Normalization is useful for removing cell-specific biases.</p>
 <p>Here, we perform the default normalization method in Seurat, which divides gene counts by the total counts for each cell, multiplies this by a scale factor of 10,000, and then log-transforms the result.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html">NormalizeData</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="highly-variable-genes" class="section level2">
@@ -194,10 +193,10 @@ Scatter plots of QC metrics.
 <a href="#highly-variable-genes" class="anchor"></a>Highly variable genes</h2>
 <p>Single cell RNA-seq data is often used for exploring heterogeneity within cell population. To reduce the computational complexity of downstream calculations and also to focus on the true biological signal, a subset of highly variable genes (HVGs) is often selected prior to downstream analyses. One of the most commonly used strategies is to take the top genes with the highest variances across all the cells. The choice of the number of HVGs is fairly arbitrary, with any value from 500 to 5000 considered reasonable.</p>
 <p>For this data, we select top 1500 HVGs to be used in downstream analyses such as PCA and UMAP visualization.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html">FindVariableFeatures</a></span><span class="op">(</span><span class="va">N1469</span>, selection.method<span class="op">=</span><span class="st">"vst"</span>, nfeatures<span class="op">=</span><span class="fl">1500</span><span class="op">)</span></code></pre></div>
 <p>A mean-variance plot can be produced for visualizing the top variable genes.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">top50</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/VariableFeatures.html">VariableFeatures</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span>, <span class="fl">50</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/VariableFeaturePlot.html">VariableFeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span>
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LabelPoints.html">LabelPoints</a></span><span class="op">(</span>plot<span class="op">=</span><span class="va">plot1</span>, points<span class="op">=</span><span class="va">top50</span>, repel<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
@@ -209,7 +208,7 @@ A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs 
 </div>
 <p>Before proceeding to dimensional reduction, we apply a linear transformation to “scale” the data. This data scaling is performed by the <code><a href="https://satijalab.org/seurat/reference/ScaleData.html">ScaleData()</a></code> function, which standardizes the expression of each gene to have a mean expression of 0 and a variance of 1 across all the cells. This step gives equal weight to the genes used in downstream analyses so that highly-expressed genes do not dominate.</p>
 <p>By default, the scaling process is only applied to the previously identified 1500 HVGs as these HVGs are used for the downstream analyses.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html">ScaleData</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="dimensional-reduction" class="section level2">
@@ -217,7 +216,7 @@ A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs 
 <a href="#dimensional-reduction" class="anchor"></a>Dimensional reduction</h2>
 <p>Dimensional reduction is an essential step in single cell analysis. It summarizes the variances of thousands of genes in a much lower numbers of dimensions, hence reduces computational work in downstream analyses. A simple, highly effective and widely used approach for linear dimensional reduction is principal components analysis (PCA). The top PCs would capture the dominant factors of heterogeneity in the data set.</p>
 <p>Here, we perform PCA on the scaled data. By default, only the previously determined 1500 HVGs are used and the first 50 PCs are computed and returned. The PCA results can be visualized in a PCA plot.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html">RunPCA</a></span><span class="op">(</span><span class="va">N1469</span>, features<span class="op">=</span><span class="fu"><a href="https://satijalab.org/seurat/reference/VariableFeatures.html">VariableFeatures</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"pca"</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
@@ -225,14 +224,14 @@ A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs 
 PCA plot showing the first two principal components of the data.
 </p>
 </div>
-<p>Although PCA greatly reduces the dimension of the data from thousands of genes to 50 PCs, it is still difficult to visualize and interpret the 50 PCs at the same time. Therefore, further dimensionality reduction strategies are required to compress the data into 2-3 dimensions for a more intuitive understanding of the data. The two popular non-linear dimensional reduction techniques are <em>t</em>-stochastic neighbor embedding (tSNE) and uniform manifold approximation and projection (UMAP).</p>
+<p>Although PCA greatly reduces the dimension of the data from thousands of genes to 50 PCs, it is still difficult to visualize and interpret the 50 PCs at the same time. Therefore, further dimensionality reduction strategies are required to compress the data into 2-3 dimensions for a more intuitive understanding of the data. The two popular non-linear dimensional reduction techniques are <em>t</em>-stochastic neighbor embedding (tSNE) <span class="citation">(Van der Maaten and Hinton 2008)</span> and uniform manifold approximation and projection (UMAP) <span class="citation">(McInnes, Healy, and Melville 2018)</span>.</p>
 <p>It is debatable whether the UMAP or tSNE visualization is better. UMAP tends to have more compact visual clusters but reduces resolution within each cluster. The main reason that UMAP has an increasing popularity is that UMAP is much faster than tSNE. Note that both UMAP and tSNE involve a series of randomization steps so setting the seed is critical.</p>
 <p>Here we perform both UMAP and tSNE for dimensional reduction and visualization. The top 30 PCs are used as input and a random seed is used for reproducibility.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dimUsed</span> <span class="op">&lt;-</span> <span class="fl">30</span>
 <span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html">RunUMAP</a></span><span class="op">(</span><span class="va">N1469</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="va">dimUsed</span>, seed.use<span class="op">=</span><span class="fl">2021</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunTSNE.html">RunTSNE</a></span><span class="op">(</span><span class="va">N1469</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="va">dimUsed</span>, seed.use<span class="op">=</span><span class="fl">2021</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span>
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">+</span> <span class="va">plot2</span></code></pre></div>
@@ -248,7 +247,7 @@ UMAP and t-SNE visualization
 <p>Cell clustering is a procedure in scRNA-seq data analysis to group cells with similar expression profiles. It is an important step for summarizing information and providing biological interpretation of the data. Seurat offers a graph-based clustering approach, which is one of the most popular clustering algorithms due to its flexibilty and scalability for large scRNA-seq datasets.</p>
 <p>One of the most commonly asked questions in cell clustering is “how many cell clusters are there in the data?” This question is often hard to answer since we can define as many clusters as we want. In fact, the number of clusters would depend on the biological questions of interest (eg. whether resolution of the major cell types will be sufficient or resolution of subtypes is required). In practice, we often experiment with different resolution in data exploration to obtain the “optimal” resolution that provides the best answer to the questions of our interest.</p>
 <p>In Seurat, the cell clustering procedure starts by constructing a KNN graph using the <code><a href="https://satijalab.org/seurat/reference/FindNeighbors.html">FindNeighbors()</a></code> function. Here, we use the top 30 PCs as input. Then the Seurat <code><a href="https://satijalab.org/seurat/reference/FindClusters.html">FindClusters()</a></code> function applies the Louvain algorithm (by default) to group cells together. For this particular data, we set the resolution parameter to 0.1. The final clusters can be found using the  function.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html">FindNeighbors</a></span><span class="op">(</span><span class="va">N1469</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="va">dimUsed</span><span class="op">)</span>
 <span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html">FindClusters</a></span><span class="op">(</span><span class="va">N1469</span>, resolution<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
@@ -260,13 +259,13 @@ UMAP and t-SNE visualization
 ## Maximum modularity in 10 random starts: 0.9600
 ## Number of communities: 5
 ## Elapsed time: 0 seconds</code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
 ##    0    1    2    3    4 
 ## 1699  507  421  213   28</code></pre>
 <p>We can visualize the cell clusters in a UMAP plot.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/UMAP-1.png" alt="UMAP visualization where cells are coloured by cell cluster." width="720"><p class="caption">
@@ -280,7 +279,7 @@ UMAP visualization where cells are coloured by cell cluster.
 <p>The next step after cell clustering is to identify marker genes that drive separation between the cell clusters. Marker genes are usually obtained by performing differential expression analyses between different clusters. In Seurat, the differential expression analysis is performed by the <code><a href="https://satijalab.org/seurat/reference/FindMarkers.html">FindMarkers()</a></code> function. By default, it identifies positive and negative markers of a single cluster (specified in <code>ident.1</code>), compared to all other cells.</p>
 <p>To increase the computational speed, the Seurat <code><a href="https://satijalab.org/seurat/reference/FindMarkers.html">FindMarkers()</a></code> function only performs DE tests on a subset of genes that satisfy certain thresholds. The <code>min.pct</code> argument requires a gene to be detected at a minimum percentage in either of the two groups of cells, and by default it is set to 10%. The <code>logfc.threshold</code> limits testing to genes of which the log-fold change between the two groups is above a certain level (0.25 by default). By default the <code><a href="https://satijalab.org/seurat/reference/FindMarkers.html">FindMarkers()</a></code> function performs Wilcoxon Rank Sum tests, but other statistical tests (eg. likelihood-ratio test, <em>t</em>-test) are also available.</p>
 <p>Here we find all markers of cluster 1 as follows.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cluster1.markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindMarkers.html">FindMarkers</a></span><span class="op">(</span><span class="va">N1469</span>, ident.1 <span class="op">=</span> <span class="fl">1</span>, min.pct <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cluster1.markers</span><span class="op">)</span></code></pre></div>
 <pre><code>##             p_val avg_log2FC pct.1 pct.2 p_val_adj
@@ -291,7 +290,7 @@ UMAP visualization where cells are coloured by cell cluster.
 ## TFF3     0.00e+00       3.46 0.803 0.010  0.00e+00
 ## AGR2    3.05e-304       2.22 0.568 0.007 4.85e-300</code></pre>
 <p>To find all markers distinguishing cluster 2 from clusters 0 and 1, we use the following lines.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cluster2.markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindMarkers.html">FindMarkers</a></span><span class="op">(</span><span class="va">N1469</span>, ident.1 <span class="op">=</span> <span class="fl">2</span>, ident.2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, min.pct <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cluster2.markers</span><span class="op">)</span></code></pre></div>
 <pre><code>##              p_val avg_log2FC pct.1 pct.2 p_val_adj
@@ -302,10 +301,10 @@ UMAP visualization where cells are coloured by cell cluster.
 ## KRT14     0.00e+00       5.40 0.969 0.057   0.0e+00
 ## SERPINB5 2.57e-292       2.26 0.686 0.032  4.1e-288</code></pre>
 <p>The Seurat <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html">FindAllMarkers()</a></code> function automates the marker detection process for all clusters. Here we find markers for every cluster compared to all remaining cells, report only the positive ones.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N1469.markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html">FindAllMarkers</a></span><span class="op">(</span><span class="va">N1469</span>, only.pos <span class="op">=</span> <span class="cn">TRUE</span>, min.pct <span class="op">=</span> <span class="fl">0.25</span>, logfc.threshold <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></code></pre></div>
 <p>We select the top 3 marker genes for each of cluster and list them below.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">topMarkers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span><span class="va">N1469.markers</span>, <span class="va">N1469.markers</span><span class="op">$</span><span class="va">cluster</span><span class="op">)</span>
 <span class="va">top3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">topMarkers</span>, <span class="va">head</span>, n<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
 <span class="va">top3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"rbind"</span>, <span class="va">top3</span><span class="op">)</span>
@@ -327,7 +326,7 @@ UMAP visualization where cells are coloured by cell cluster.
 ## 4.CDK1         0       1.48 0.679 0.001         0       4     CDK1
 ## 4.MKI67        0       1.37 0.714 0.000         0       4    MKI67</code></pre>
 <p>The expression level of the top marker genes can be overlaid on the UMAP plots for visualization.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="va">top3</span><span class="op">$</span><span class="va">gene</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/FeaturePlotMarkers-1.png" alt="Top marker expression visualizations on a UMAP plot." width="1056"><p class="caption">
@@ -335,7 +334,7 @@ Top marker expression visualizations on a UMAP plot.
 </p>
 </div>
 <p>A dot plot can also be produced for visualizing the top marker genes.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html">DotPlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="va">top3</span><span class="op">$</span><span class="va">gene</span>, dot.scale <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/DotPlotMarkers-1.png" alt="A dot plot of top marker genes of each cluster." width="768"><p class="caption">
@@ -347,35 +346,35 @@ A dot plot of top marker genes of each cluster.
 <h2 class="hasAnchor">
 <a href="#cell-type-annotation" class="anchor"></a>Cell type annotation</h2>
 <p>Interpreting cell clusters in biological context is one of the most challenging tasks in scRNA-seq data analysis. Prior biological knowledge is often required to do so. Marker genes from the literatures or the curated gene sets (e.g., Gene Ontology, KEGG pathways) are the common sources of prior information. Alternatively, we can use published reference datasets where samples are well annotated with cell type information.</p>
-<p>Here we use a reference bulk RNA-seq dataset on human mammary gland epithelium. This reference RNA-seq data consists of a total of 34 samples from basal, luminal progenitor (LP), mature luminal (ML), and stromal cell types. Differential expression analysis of this reference data was performed using limma-voom and TREAT. Genes were considered cell type-specific if they were upregulated in one cell type vs all other types. This yielded 515, 323, 765, and 1094 signature genes for basal, LP, ML, and stroma, respectively.</p>
+<p>Here we use a reference bulk RNA-seq dataset of human mammary gland epithelium from the same study <span class="citation">(Pal et al. 2021)</span>. This reference RNA-seq (GSE161892) data consists of a total of 34 samples from basal, luminal progenitor (LP), mature luminal (ML), and stromal cell types. Differential expression analysis of this reference data was performed using limma-voom and TREAT <span class="citation">(Law et al. 2014; McCarthy and Smyth 2009)</span>. Genes were considered cell type-specific if they were upregulated in one cell type vs all other types. This yielded 515, 323, 765, and 1094 signature genes for basal, LP, ML, and stroma, respectively.</p>
 <p>Here we download those signature genes and load them into R.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">url.Signatures</span> <span class="op">&lt;-</span> <span class="st">"https://github.com/SmythLab/scRNAseq-Workshop/raw/main/Data/Human-PosSigGenes.RData"</span>
 <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html">download.file</a></span><span class="op">(</span><span class="va">url.Signatures</span>, destfile<span class="op">=</span><span class="st">"Data/Human-PosSigGenes.RData"</span>, mode<span class="op">=</span><span class="st">"wb"</span><span class="op">)</span> </code></pre></div>
 <p>We restrict the signature genes to those expressed in the single cell data.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="st">"Data/Human-PosSigGenes.RData"</span><span class="op">)</span>
 <span class="va">HumanSig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Basal<span class="op">=</span><span class="va">Basal</span>, LP<span class="op">=</span><span class="va">LP</span>, ML<span class="op">=</span><span class="va">ML</span>, Str<span class="op">=</span><span class="va">Str</span><span class="op">)</span>
 <span class="va">HumanSig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">HumanSig</span>, <span class="va">intersect</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>To associate each cell in the single cell data with the four cell populations in the reference bulk data, we compute the signature scores of the four cell populations for each cell. Here the signature score of a particular cell type is defined as the average expression level of the cell type-specific genes in a given cell.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SigScore</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">HumanSig</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
     <span class="va">SigScore</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">data</span><span class="op">[</span><span class="va">HumanSig</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="op">]</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>We can visualize the signature scores in both UMAP plots and violin plots.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SigScores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"cbind"</span>, <span class="va">SigScore</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Basal"</span>, <span class="st">"LP"</span>, <span class="st">"ML"</span>, <span class="st">"Stroma"</span><span class="op">)</span>
 <span class="va">N1469</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">SigScores</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/SigScorePlot-1.png" alt="Signature scores." width="960"><p class="caption">
 Signature scores.
 </p>
 </div>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
@@ -385,7 +384,7 @@ Violin plots of signature scores.
 <p>It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells. Likewise, cluster 0 and 4 are LP, cluster 1 is ML and cluster 3 is stroma.</p>
 <p>Another way to visualize the correlation between the single cell and the reference bulk dataset is to make a ternary plot, which is useful for studies concerning three major cell populations. For this data, we are particularly interested in assigning each cell to one of the three major epithelial cell populations (basal, LP and ML).</p>
 <p>We produce a ternary plot to see which of the three populations the cells are closer to. To measure the similarity between each cell and three populations, we count the numbers of expressed signatures (with at least 1 count) in each cell. The position of each cell on the ternary plot is determined by the numbers of expressed gene signatures of the three populations in that cell.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">TN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span>, <span class="fl">3L</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">TN</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"LP"</span>, <span class="st">"ML"</span>, <span class="st">"Basal"</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">TN</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
@@ -414,7 +413,7 @@ Violin plots of signature scores.
 <h2 class="hasAnchor">
 <a href="#read-in-the-data-1" class="anchor"></a>Read in the data</h2>
 <p>We use 10X single cell RNA-seq profiles of normal epithelial cells from five individual human. We first read in the raw data of all five samples for the integration analysis.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"N1469"</span>, <span class="st">"N0280"</span>, <span class="st">"N1105"</span>, <span class="st">"N0230"</span>, <span class="st">"N0123"</span><span class="op">)</span>
 <span class="va">RawData</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">RawData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">N1469.data</span>
@@ -424,7 +423,7 @@ Violin plots of signature scores.
 <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">RawData</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">Samples</span></code></pre></div>
 <p>Then we create a list of 5 Seurat objects (one for each human sample). The same cell filtering criteria is applied to all the samples.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SeuratList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Samples</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
     <span class="va">SeuratList</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/CreateSeuratObject.html">CreateSeuratObject</a></span><span class="op">(</span>counts<span class="op">=</span><span class="va">RawData</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, project<span class="op">=</span><span class="va">Samples</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, min.cells<span class="op">=</span><span class="fl">3</span>, min.features<span class="op">=</span><span class="fl">200</span><span class="op">)</span>
@@ -432,7 +431,7 @@ Violin plots of signature scores.
     <span class="va">SeuratList</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">SeuratList</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, subset <span class="op">=</span> <span class="va">nFeature_RNA</span> <span class="op">&gt;</span> <span class="fl">500</span> <span class="op">&amp;</span> <span class="va">percent.mt</span> <span class="op">&lt;</span> <span class="fl">20</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>We perform all the pre-processing steps (normalization, defining HVGs and scaling the data) for each individual sample.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SeuratList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">SeuratList</span>, <span class="va">NormalizeData</span><span class="op">)</span>
 <span class="va">SeuratList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">SeuratList</span>, <span class="va">FindVariableFeatures</span>, selection.method<span class="op">=</span><span class="st">"vst"</span>, nfeatures<span class="op">=</span><span class="fl">1500</span><span class="op">)</span>
 <span class="va">SeuratList</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">SeuratList</span>, <span class="va">ScaleData</span><span class="op">)</span>
@@ -443,10 +442,10 @@ Violin plots of signature scores.
 <a href="#data-integration" class="anchor"></a>Data integration</h2>
 <p>Seurat implements an anchor-based method for integrating multiple single cell RNA-seq samples. The method first identifies pairs of cells between different samples (“anchors”) that are in a matched biological state. These “anchors” are then used to harmonize datasets into a single reference, of which the labels and data can be projected onto query datasets <span class="citation">(Stuart et al. 2019)</span>.</p>
 <p>We identify anchors using the <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">FindIntegrationAnchors()</a></code> function, which takes a list of Seurat objects as input.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Anchors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">FindIntegrationAnchors</a></span><span class="op">(</span><span class="va">SeuratList</span><span class="op">)</span></code></pre></div>
 <p>We then use these anchors to integrate the five datasets together with <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">IntegrateData()</a></code>. This step creates an  data assay.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/IntegrateData.html">IntegrateData</a></span><span class="op">(</span><span class="va">Anchors</span><span class="op">)</span></code></pre></div>
 <p>Now we can run a single integrated analysis on all cells. The downstream analysis will be performed on corrected data (the <code>integrated</code> data assay). The original unmodified data still resides in the <code>RNA</code> assay.</p>
 </div>
@@ -454,15 +453,15 @@ Violin plots of signature scores.
 <h2 class="hasAnchor">
 <a href="#dimensional-reduction-1" class="anchor"></a>Dimensional reduction</h2>
 <p>The dimensional reduction step for the integrated data is the same as for a single sample. We first scale the data.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html">ScaleData</a></span><span class="op">(</span><span class="va">NormEpi</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>Then we perform dimensional reduction (PCA and UMAP) for the integrated data.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dimUsed</span> <span class="op">&lt;-</span> <span class="fl">30</span>
 <span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html">RunPCA</a></span><span class="op">(</span><span class="va">NormEpi</span>, npcs<span class="op">=</span><span class="va">dimUsed</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html">RunUMAP</a></span><span class="op">(</span><span class="va">NormEpi</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="va">dimUsed</span>, seed.use<span class="op">=</span><span class="fl">2021</span><span class="op">)</span></code></pre></div>
 <p>The UMAP visualization of the integrated data is shown below.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, group.by<span class="op">=</span><span class="st">"orig.ident"</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/UMAP_Sample-1.png" alt="UMAP visualization of the integrated data where cells are coloured by patient." width="768"><p class="caption">
@@ -475,25 +474,25 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 <h2 class="hasAnchor">
 <a href="#cell-clustering-1" class="anchor"></a>Cell clustering</h2>
 <p>We then proceed to cell clustering of the integrated data, which is done in the same way as before.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindNeighbors.html">FindNeighbors</a></span><span class="op">(</span><span class="va">NormEpi</span>, dims<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="va">dimUsed</span><span class="op">)</span>
 <span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindClusters.html">FindClusters</a></span><span class="op">(</span><span class="va">NormEpi</span>, resolution<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
 ## 
 ## Number of nodes: 13644
-## Number of edges: 573287
+## Number of edges: 572889
 ## 
 ## Running Louvain algorithm...
-## Maximum modularity in 10 random starts: 0.9645
+## Maximum modularity in 10 random starts: 0.9642
 ## Number of communities: 6
 ## Elapsed time: 2 seconds</code></pre>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
 ##    0    1    2    3    4    5 
-## 5526 5438 1979  419  214   68</code></pre>
+## 5520 5446 2040  418  153   67</code></pre>
 <p>The clustering results are shown in the UMAP plot below.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/UMAP_Cluster-1.png" alt="UMAP visualization of the integrated data where cells are coloured by cluster." width="768"><p class="caption">
@@ -505,27 +504,27 @@ UMAP visualization of the integrated data where cells are coloured by cluster.
 <h2 class="hasAnchor">
 <a href="#cell-type-annotation-1" class="anchor"></a>Cell type annotation</h2>
 <p>The same human reference data is used for cell type annotation. The signature scores of the four cell populations are calculated for each cell in the integrated data.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">HumanSig2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Basal<span class="op">=</span><span class="va">Basal</span>, LP<span class="op">=</span><span class="va">LP</span>, ML<span class="op">=</span><span class="va">ML</span>, Str<span class="op">=</span><span class="va">Str</span><span class="op">)</span>
 <span class="va">HumanSig2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">HumanSig2</span>, <span class="va">intersect</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SigScore2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">HumanSig2</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
     <span class="va">SigScore2</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">data</span><span class="op">[</span><span class="va">HumanSig</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="op">]</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">SigScores2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"cbind"</span>, <span class="va">SigScore2</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Basal"</span>, <span class="st">"LP"</span>, <span class="st">"ML"</span>, <span class="st">"Stroma"</span><span class="op">)</span>
 <span class="va">NormEpi</span><span class="op">@</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">meta.data</span>, <span class="va">SigScores2</span><span class="op">)</span></code></pre></div>
 <p>We then produce feature plots and violin plots to visualize the signature scores.</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/SigScorePlot2-1.png" alt="Signature scores for the integrated data." width="960"><p class="caption">
 Signature scores for the integrated data.
 </p>
 </div>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot2-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
@@ -534,7 +533,7 @@ Violin plots of signature scores.
 </div>
 <p>It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells. Likewise, cluster 0 and 5 are LP or LP-like, cluster 1 and 4 are ML or ML-like, and cluster 3 is stroma.</p>
 <p>A ternary plot can also be generated in the same way to examine the correlation between the cells and the three major epithelial populations.</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">TN2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span>, <span class="fl">3L</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">TN2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"LP"</span>, <span class="st">"ML"</span>, <span class="st">"Basal"</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">TN2</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
@@ -556,34 +555,34 @@ Violin plots of signature scores for the integrated data.
 <h2 class="hasAnchor">
 <a href="#biological-variation" class="anchor"></a>Biological variation</h2>
 <p>In RNA-seq experiments with replicate samples, biological variation represents the variation of the underlying gene abundances between the replicates. Accounting for biological variation is crucial in RNA-seq DE analysis. Many statistically rigorous methods and software packages have been developed for estimating biological variation and incorporating it into the DE analysis (e.g., edgeR, limma, DESeq2 etc.).</p>
-<p>For single cell RNA-seq experiments with biological replicates, one should also take into account the biological variation between different replicate samples where cells are obtained. However, applying bulk RNA-seq DE methods directly to single cell RNA-seq data is not appropriate as each cell is not independent biological replicate. One of the commonly used methods to account for biological variation between replicates is the “pseudo-bulk” approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together.</p>
+<p>For single cell RNA-seq experiments with biological replicates, one should also take into account the biological variation between different replicate samples where cells are obtained. However, applying bulk RNA-seq DE methods directly to single cell RNA-seq data is not appropriate as each cell is not independent biological replicate. One of the commonly used methods to account for biological variation between replicates is the “pseudo-bulk” approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together <span class="citation">(Tung et al. 2017)</span>.</p>
 </div>
 <div id="creating-pseudo-bulk-samples" class="section level2">
 <h2 class="hasAnchor">
 <a href="#creating-pseudo-bulk-samples" class="anchor"></a>Creating pseudo-bulk samples</h2>
 <p>We first extract the cluster and sample information from the integrated Seurat object and combine them together. The numbers of cells under different combinations of cell cluster and sample are shown below.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sampID</span> <span class="op">&lt;-</span> <span class="va">NormEpi</span><span class="op">@</span><span class="va">meta.data</span><span class="op">$</span><span class="va">orig.ident</span>
 <span class="va">clustID</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span>
 <span class="va">sampClust</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">sampID</span>, <span class="va">clustID</span>, sep<span class="op">=</span><span class="st">"_Clst"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">sampClust</span><span class="op">)</span></code></pre></div>
 <pre><code>## sampClust
 ## N0123_Clst0 N0123_Clst1 N0123_Clst2 N0123_Clst3 N0123_Clst4 N0123_Clst5 N0230_Clst0 
-##         839        1563         358          12          49          19        1029 
+##         839        1563         366          12          41          19        1033 
 ## N0230_Clst1 N0230_Clst2 N0230_Clst3 N0230_Clst4 N0230_Clst5 N0280_Clst0 N0280_Clst1 
-##         562         139          78          33          16         346         392 
+##         561         156          77          15          15         346         392 
 ## N0280_Clst2 N0280_Clst3 N0280_Clst4 N0280_Clst5 N1105_Clst0 N1105_Clst1 N1105_Clst2 
-##         302          39          44           3        1601        2465         771 
+##         316          39          30           3        1597        2469         784 
 ## N1105_Clst3 N1105_Clst4 N1105_Clst5 N1469_Clst0 N1469_Clst1 N1469_Clst2 N1469_Clst3 
-##          80          35           1        1711         456         409         210 
+##          80          22           1        1705         461         418         210 
 ## N1469_Clst4 N1469_Clst5 
-##          53          29</code></pre>
+##          45          29</code></pre>
 <p>We then form pseudo-bulk samples by aggregating the read counts for each gene by cluster-sample combination.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">rawCounts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span><span class="op">)</span>
 <span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rowsum.html">rowsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">rawCounts</span><span class="op">)</span>, group<span class="op">=</span><span class="va">sampClust</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>We create a <code>DGEList</code> object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline.</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<p>We create a <code>DGEList</code> object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline <span class="citation">(Chen, Lun, and Smyth 2016)</span>.</p>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://bioinf.wehi.edu.au/edgeR">edgeR</a></span><span class="op">)</span>
 <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/DGEList.html">DGEList</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>
 <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"^.*_Clst"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
@@ -593,66 +592,66 @@ Violin plots of signature scores for the integrated data.
 <h2 class="hasAnchor">
 <a href="#filtering" class="anchor"></a>Filtering</h2>
 <p>The library size (total number of reads) of each pseudo-bulk sample highly depends on the number of cells in that sample. We remove the samples with library size less than 50,000.</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">keep.sample</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">lib.size</span> <span class="op">&gt;</span> <span class="fl">5e4</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.sample</span><span class="op">)</span></code></pre></div>
 <pre><code>## keep.sample
 ## FALSE  TRUE 
 ##     2    28</code></pre>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span>,<span class="va">keep.sample</span><span class="op">]</span></code></pre></div>
 <p>The gene filtering is performed by the <code>filterByExpr</code> function in edgeR.</p>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">keep.gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/filterByExpr.html">filterByExpr</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.gene</span><span class="op">)</span></code></pre></div>
 <pre><code>## keep.gene
 ## FALSE  TRUE 
-##  8955 10274</code></pre>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+##  8775 10454</code></pre>
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">keep.gene</span>,,keep<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></code></pre></div>
 </div>
 <div id="normalization-1" class="section level2">
 <h2 class="hasAnchor">
 <a href="#normalization-1" class="anchor"></a>Normalization</h2>
-<p>We perform TMM normalization to adjust for the compositional biases between the samples. The normalization factors are listed below.</p>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<p>We perform TMM normalization <span class="citation">(Robinson and Oshlack 2010)</span> to adjust for the compositional biases between the samples. The normalization factors are listed below.</p>
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html">calcNormFactors</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="va">y</span><span class="op">$</span><span class="va">samples</span></code></pre></div>
 <pre><code>##             group lib.size norm.factors Patient
-## N0123_Clst0     0  4250653        0.908   N0123
-## N0123_Clst1     1  5908620        1.052   N0123
-## N0123_Clst2     2   914352        0.906   N0123
-## N0123_Clst4     4   162664        1.184   N0123
-## N0123_Clst5     5   155062        1.210   N0123
-## N0230_Clst0     0  4251771        0.982   N0230
-## N0230_Clst1     1  1930372        1.108   N0230
-## N0230_Clst2     2   418705        1.061   N0230
-## N0230_Clst3     3   216976        1.149   N0230
-## N0230_Clst4     4   107137        1.277   N0230
-## N0230_Clst5     5    81688        1.624   N0230
-## N0280_Clst0     0  3772988        0.740   N0280
-## N0280_Clst1     1  2029941        1.082   N0280
-## N0280_Clst2     2  1342851        0.913   N0280
-## N0280_Clst3     3   188352        0.996   N0280
-## N0280_Clst4     4   219343        1.197   N0280
-## N0280_Clst5     5    55428        1.218   N0280
-## N1105_Clst0     0 18414657        0.750   N1105
-## N1105_Clst1     1 15687217        0.968   N1105
-## N1105_Clst2     2  3680521        0.779   N1105
-## N1105_Clst3     3   430315        0.899   N1105
-## N1105_Clst4     4   220814        1.176   N1105
-## N1469_Clst0     0 10510089        0.727   N1469
-## N1469_Clst1     1  2259472        0.886   N1469
-## N1469_Clst2     2  1715710        0.842   N1469
-## N1469_Clst3     3  1169207        0.790   N1469
-## N1469_Clst4     4   261270        0.994   N1469
-## N1469_Clst5     5   260898        1.085   N1469</code></pre>
+## N0123_Clst0     0  4252753        0.914   N0123
+## N0123_Clst1     1  5913960        1.033   N0123
+## N0123_Clst2     2   933292        0.870   N0123
+## N0123_Clst4     4   144308        1.135   N0123
+## N0123_Clst5     5   155185        1.155   N0123
+## N0230_Clst0     0  4261533        1.110   N0230
+## N0230_Clst1     1  1935170        1.140   N0230
+## N0230_Clst2     2   452640        1.031   N0230
+## N0230_Clst3     3   214246        1.115   N0230
+## N0230_Clst4     4    67372        1.410   N0230
+## N0230_Clst5     5    80893        1.437   N0230
+## N0280_Clst0     0  3774944        0.729   N0280
+## N0280_Clst1     1  2031958        1.014   N0280
+## N0280_Clst2     2  1382642        0.875   N0280
+## N0280_Clst3     3   188620        1.039   N0280
+## N0280_Clst4     4   180587        1.185   N0280
+## N0280_Clst5     5    55465        1.251   N0280
+## N1105_Clst0     0 18342441        0.767   N1105
+## N1105_Clst1     1 15781150        0.968   N1105
+## N1105_Clst2     2  3730398        0.778   N1105
+## N1105_Clst3     3   430622        0.908   N1105
+## N1105_Clst4     4   172690        1.219   N1105
+## N1469_Clst0     0 10459180        0.859   N1469
+## N1469_Clst1     1  2315185        0.923   N1469
+## N1469_Clst2     2  1745234        0.831   N1469
+## N1469_Clst3     3  1170267        0.776   N1469
+## N1469_Clst4     4   234042        0.933   N1469
+## N1469_Clst5     5   261094        1.034   N1469</code></pre>
 </div>
 <div id="data-exploration" class="section level2">
 <h2 class="hasAnchor">
 <a href="#data-exploration" class="anchor"></a>Data exploration</h2>
 <p>We produce an MDS plot to visualize the relationship between all the pseudo-bulk samples.</p>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">group</span><span class="op">)</span>
 <span class="va">Patient</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">Patient</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
@@ -667,7 +666,7 @@ MDS plots of the pseudo-bulk samples.
 </div>
 <p>From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level. We also notice that samples from cluster 0 and 5 have similar expression pattern, whereas samples from cluster 1 and 4 are close to each other.</p>
 <p>We use the cluster and sample information to create a design matrix as follows.</p>
-<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">Cluster</span> <span class="op">+</span> <span class="va">Patient</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span></code></pre></div>
 <pre><code>##  [1] "Cluster0"     "Cluster1"     "Cluster2"     "Cluster3"     "Cluster4"    
@@ -677,11 +676,11 @@ MDS plots of the pseudo-bulk samples.
 <h2 class="hasAnchor">
 <a href="#dispersion-estimation" class="anchor"></a>Dispersion estimation</h2>
 <p>We estimate negative binomial dispersions and quasi-likelihood dispersions as follows.</p>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/estimateDisp.html">estimateDisp</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span>
 <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/glmQLFTest.html">glmQLFit</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span></code></pre></div>
 <p>The dispersions can be examined in the following plots.</p>
-<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotBCV.html">plotBCV</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotQLDisp.html">plotQLDisp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
@@ -695,7 +694,7 @@ BCV and quasi-likelihood dispersion plots.
 <h2 class="hasAnchor">
 <a href="#differential-expression" class="anchor"></a>Differential expression</h2>
 <p>For the differential expression analysis, we are particularly interested in the genes that are up-regulated in each cluster compared with all the other clusters. Therefore, we create a contrast matrix as follows. Each column of the matrix represents a testing constrast that compares one cluster with the average of all the other clusters.</p>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ncls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span>
 <span class="va">contr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">ncls</span><span class="op">)</span>, <span class="va">ncls</span>, <span class="va">ncls</span><span class="op">)</span>,
                 <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span><span class="op">-</span><span class="va">ncls</span>, <span class="va">ncls</span><span class="op">)</span> <span class="op">)</span>
@@ -715,47 +714,47 @@ BCV and quasi-likelihood dispersion plots.
 ## PatientN0230      0.0      0.0      0.0      0.0      0.0      0.0
 ## PatientN0123      0.0      0.0      0.0      0.0      0.0      0.0</code></pre>
 <p>We then perform quasi-likelihood F-test under each contrast. In order to focus on genes with strong DE signal, we test for the differences above a fold-change threshold of 1.3. This is done by calling the <code>glmTreat</code> function in edgeR. The results of all the tests are stored as a list of <code>DGELRT</code> objects.</p>
-<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">ncls</span><span class="op">)</span> <span class="va">test</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/glmTreat.html">glmTreat</a></span><span class="op">(</span><span class="va">fit</span>, contrast<span class="op">=</span><span class="va">contr</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lfc<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="fl">1.3</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">test</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span></code></pre></div>
 <p>The number of DE genes under each comparison can be viewed by the <code>decideTestsDGE</code> function.</p>
-<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dtest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">test</span>, <span class="va">decideTestsDGE</span><span class="op">)</span>, <span class="va">summary</span><span class="op">)</span>
 <span class="va">dtest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"cbind"</span>, <span class="va">dtest</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">dtest</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span>
 <span class="va">dtest</span></code></pre></div>
 <pre><code>##        Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
-## Down        454      970     1703     1106     1600      637
-## NotSig     8025     6847     6321     7558     7178     9113
-## Up         1795     2457     2250     1610     1496      524</code></pre>
+## Down        574      919     1506     1109     1481      497
+## NotSig     8599     7161     6685     7692     7401     9380
+## Up         1281     2374     2263     1653     1572      577</code></pre>
 <p>We can view the top DE results using the <code>topTags</code> function. For example, to see the top 20 DE genes of cluster 2 vs all the other clusters, we use the following line.</p>
-<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/topTags.html">topTags</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">Cluster2</span>, n<span class="op">=</span><span class="fl">20L</span><span class="op">)</span></code></pre></div>
 <pre><code>## Coefficient:  -0.2*Cluster0 -0.2*Cluster1 1*Cluster2 -0.2*Cluster3 -0.2*Cluster4 -0.2*Cluster5 
 ##          logFC unshrunk.logFC logCPM   PValue      FDR
-## ACTG2     7.81           7.82   9.22 1.33e-25 1.36e-21
-## SERPINB5  6.28           6.30   6.55 1.13e-24 5.83e-21
-## KRT5      6.28           6.28   8.99 2.08e-24 7.13e-21
-## DLL1      5.40           5.42   5.94 7.71e-24 1.98e-20
-## DKK3      5.72           5.73   6.70 1.24e-23 2.56e-20
-## CD200     6.18           6.21   6.50 2.29e-23 3.91e-20
-## TPM2      5.71           5.72   8.27 2.67e-23 3.91e-20
-## CCND2     6.25           6.31   5.67 2.04e-22 2.62e-19
-## TNS4      5.05           5.07   6.24 9.05e-22 1.03e-18
-## GPC1      4.73           4.73   6.29 1.53e-21 1.57e-18
-## KRT14     7.14           7.14  10.86 1.87e-21 1.74e-18
-## NRP2      5.98           6.02   6.06 4.28e-21 3.60e-18
-## COL17A1   8.91          16.14   5.32 4.55e-21 3.60e-18
-## OXTR      5.45           5.46   6.23 6.57e-21 4.82e-18
-## CAV1      4.83           4.83   8.31 7.15e-21 4.90e-18
-## FAM126A   4.48           4.50   5.84 1.01e-20 6.49e-18
-## MSRB3     5.31           5.34   5.37 1.24e-20 7.52e-18
-## ACTA2     6.00           6.00   8.46 1.90e-20 1.09e-17
-## TUBB2B    4.45           4.45   7.58 2.78e-20 1.50e-17
-## DST       3.83           3.83   8.71 3.95e-20 2.03e-17</code></pre>
+## ACTG2     7.72           7.73   9.21 2.82e-26 2.95e-22
+## SERPINB5  6.28           6.30   6.56 3.58e-25 1.87e-21
+## KRT5      6.51           6.52   8.98 2.57e-24 7.20e-21
+## TPM2      5.77           5.78   8.27 2.76e-24 7.20e-21
+## DLL1      5.38           5.39   5.96 9.51e-24 1.99e-20
+## DKK3      5.77           5.78   6.70 1.24e-23 2.17e-20
+## CD200     6.11           6.13   6.52 1.57e-23 2.34e-20
+## KRT14     7.39           7.39  10.84 1.16e-22 1.51e-19
+## TNS4      4.96           4.97   6.25 1.76e-21 2.04e-18
+## ACTA2     6.22           6.23   8.45 2.66e-21 2.78e-18
+## GPC1      4.65           4.66   6.31 3.87e-21 3.68e-18
+## NRP2      5.92           5.96   6.08 4.25e-21 3.70e-18
+## COL17A1   8.93          16.15   5.34 4.69e-21 3.77e-18
+## CCND2     7.07          10.60   5.68 5.44e-21 4.06e-18
+## CAV1      4.76           4.76   8.32 6.77e-21 4.72e-18
+## MSRB3     5.27           5.29   5.38 7.63e-21 4.99e-18
+## TUBB2B    4.44           4.44   7.58 1.00e-20 6.17e-18
+## OXTR      5.35           5.37   6.25 1.14e-20 6.61e-18
+## DST       3.84           3.84   8.71 2.04e-20 1.12e-17
+## FAM126A   4.41           4.42   5.87 2.87e-20 1.50e-17</code></pre>
 <p>We can extract the top 15 marker genes (up-regulated only) of each cluster as follows.</p>
-<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">top</span> <span class="op">&lt;-</span> <span class="fl">15</span>
 <span class="va">pseudoMakers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">ncls</span><span class="op">)</span> <span class="op">{</span>
@@ -766,7 +765,7 @@ BCV and quasi-likelihood dispersion plots.
 <span class="va">Markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span><span class="op">(</span><span class="va">pseudoMakers</span><span class="op">)</span>
 <span class="va">Markers</span> <span class="op">&lt;-</span> <span class="va">Markers</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">Markers</span><span class="op">)</span><span class="op">]</span></code></pre></div>
 <p>Then we create a heatmap using <code>pheatmap</code> for those top marker genes. The standardized log-CPM values of the marker genes are used for the expression levels on the heatmap. Genes and samples on the heatmap are reordered by the Ward method of hierarchical clustering, which correctly groups samples by cell cluster.</p>
-<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">pheatmap</span><span class="op">)</span>
 <span class="va">lcpm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/cpm.html">cpm</a></span><span class="op">(</span><span class="va">y</span>, log<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">expr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">lcpm</span><span class="op">[</span><span class="va">Markers</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
@@ -789,7 +788,7 @@ Heat map of the top marker genes.
 <div id="session-info" class="section level1">
 <h1 class="hasAnchor">
 <a href="#session-info" class="anchor"></a>Session info</h1>
-<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code>## R version 4.1.0 (2021-05-18)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -858,11 +857,38 @@ Heat map of the top marker genes.
 <h1 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-chen2016reads" class="csl-entry">
+Chen, Yunshun, Aaron TL Lun, and Gordon K Smyth. 2016. <span>“From Reads to Genes to Pathways: Differential Expression Analysis of RNA-Seq Experiments Using Rsubread and the edgeR Quasi-Likelihood Pipeline.”</span> <em>F1000Research</em> 5.
+</div>
+<div id="ref-ilicic2016classification" class="csl-entry">
+Ilicic, Tomislav, Jong Kyoung Kim, Aleksandra A Kolodziejczyk, Frederik Otzen Bagger, Davis James McCarthy, John C Marioni, and Sarah A Teichmann. 2016. <span>“Classification of Low Quality Cells from Single-Cell RNA-Seq Data.”</span> <em>Genome Biology</em> 17 (1): 1–15.
+</div>
+<div id="ref-law2014voom" class="csl-entry">
+Law, Charity W, Yunshun Chen, Wei Shi, and Gordon K Smyth. 2014. <span>“Voom: Precision Weights Unlock Linear Model Analysis Tools for RNA-Seq Read Counts.”</span> <em>Genome Biology</em> 15 (2): 1–17.
+</div>
+<div id="ref-mccarthy2009testing" class="csl-entry">
+McCarthy, Davis J, and Gordon K Smyth. 2009. <span>“Testing Significance Relative to a Fold-Change Threshold Is a TREAT.”</span> <em>Bioinformatics</em> 25 (6): 765–71.
+</div>
+<div id="ref-mcinnes2018umap" class="csl-entry">
+McInnes, Leland, John Healy, and James Melville. 2018. <span>“Umap: Uniform Manifold Approximation and Projection for Dimension Reduction.”</span> <em>arXiv Preprint arXiv:1802.03426</em>.
+</div>
 <div id="ref-pal2021scrnaseqatlas" class="csl-entry">
 Pal, Bhupinder, Yunshun Chen, François Vaillant, Bianca D. Capaldo, Rachel Joyce, Xiaoyu Song, Vanessa Bryant, et al. 2021. <span>“A Single Cell <span>RNA</span> Atlas of Human Breast Spanning Normal, Preneoplastic and Tumorigenic States.”</span> <em>EMBO Journal</em>, Accepted 17 March 2021.
 </div>
+<div id="ref-robinson2010scaling" class="csl-entry">
+Robinson, Mark D, and Alicia Oshlack. 2010. <span>“A Scaling Normalization Method for Differential Expression Analysis of RNA-Seq Data.”</span> <em>Genome Biology</em> 11 (3): 1–9.
+</div>
+<div id="ref-satija2015spatial" class="csl-entry">
+Satija, Rahul, Jeffrey A Farrell, David Gennert, Alexander F Schier, and Aviv Regev. 2015. <span>“Spatial Reconstruction of Single-Cell Gene Expression Data.”</span> <em>Nature Biotechnology</em> 33 (5): 495–502.
+</div>
 <div id="ref-stuart2019comprehensive" class="csl-entry">
 Stuart, Tim, Andrew Butler, Paul Hoffman, Christoph Hafemeister, Efthymia Papalexi, William M Mauck III, Yuhan Hao, Marlon Stoeckius, Peter Smibert, and Rahul Satija. 2019. <span>“Comprehensive Integration of Single-Cell Data.”</span> <em>Cell</em> 177 (7): 1888–1902.
+</div>
+<div id="ref-tung2017batch" class="csl-entry">
+Tung, Po-Yuan, John D Blischak, Chiaowen Joyce Hsiao, David A Knowles, Jonathan E Burnett, Jonathan K Pritchard, and Yoav Gilad. 2017. <span>“Batch Effects and the Effective Design of Single-Cell Gene Expression Studies.”</span> <em>Scientific Reports</em> 7 (1): 1–15.
+</div>
+<div id="ref-van2008visualizing" class="csl-entry">
+Van der Maaten, Laurens, and Geoffrey Hinton. 2008. <span>“Visualizing Data Using t-SNE.”</span> <em>Journal of Machine Learning Research</em> 9 (11).
 </div>
 </div>
 </div>
