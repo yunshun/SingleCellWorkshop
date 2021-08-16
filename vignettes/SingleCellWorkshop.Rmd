@@ -4,7 +4,7 @@ author:
 - name: Yunshun Chen
   affiliation: Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia
   email: yuchen@wehi.edu.au
-date: Aug 15, 2021
+date: Aug 16, 2021
 output:
   BiocStyle::html_document:
     toc: true
@@ -23,13 +23,13 @@ abstract: |
 # Introduction
 
 Single-cell RNA sequencing (scRNA-seq) has become a widely used technique that allows researchers to profile the gene expression and study molecular biology at the cellular level. 
-It provides biological resolution that cannot be achieved with conventional bulk RNA-seq experiments on cell populations. 
+It provides biological resolution that cannot be achieved with conventional bulk RNA-seq experiments on cell populations.
 
 Here, we provide a detailed workflow for analyzing the 10X single cell RNA-seq data from a single cell RNA expression atlas of human breast tissue [@pal2021scrnaseqatlas].
 This cell atlas explores the cellular heterogeneity of human mammary gland across different states including normal, pre-neoplastic and cancerous states.
 
 We will be using part of this cell atlas data to demonstrate how to perform a standard analysis for examining one single cell sample, an integration analysis for exploring the cellular heterogeneity across multiple samples, and how to perform differential expression analysis using pseudo-bulk approach.
-Most of the analysis will be performed using the _Seurat_ package.
+Most of the analysis will be performed using the _Seurat_ package [@satija2015spatial].
 
 # Preliminary
 
@@ -40,8 +40,8 @@ They need to be pre-processed by software tools such as _cellranger_.
 
 We use _cellranger_ to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell.
 The entire analysis in this workflow is conducted within the R environment using the outputs from _cellranger_.
-We do not cover the details of running `cellranger` as they are beyond the scope of this workflow.
-The information of how to run `cellranger` is available at 
+We do not cover the details of running _cellranger_ as they are beyond the scope of this workflow.
+The information of how to run _cellranger_ is available at 
 \url{https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger}.
 
 ```{r GlobalOptions, echo=FALSE, include=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
@@ -56,8 +56,8 @@ library(BiocStyle)
 
 ## Downloading the read counts
 
-In this workshop, we will be using five samples from this published study.
-These five samples correspond to five individual patients with the following Ids: _N1469_, _N0280_, _N1105_, _N0230_ and _N0123_.
+In this workshop, we will be using five samples from this published study [@pal2021scrnaseqatlas].
+These five samples correspond to five individual patients with the following Ids: N1469, N0280, N1105, N0230 and N0123.
 The accession numbers of the five samples are GSM4909258, GSM4909255, GSM4909260, GSM4909264 and GSM4909267, respectively.
 
 We first create a `Data` folder under the current working directory.
@@ -97,11 +97,9 @@ We load the Seurt package and read in the 10X data for Patient N1469.
 The object `N1469.data` is a sparse matrix containing the raw count data of Patient N1469.
 Rows are features (genes) and columns are cells.
 By default, the column names of the data are the cell barcodes.
-To distinguish cells from different patients in the later analysis, the patient Id is added as a prefix to the column names.
+To distinguish cells from different patients in the integration analysis later on, the patient Id is added as a prefix to the column names.
 ```{r loadSeurat}
 library(Seurat)
-```
-```{r Readin}
 N1469.data <- Read10X(data.dir = "Data/N1469")
 colnames(N1469.data) <- paste("N1469", colnames(N1469.data), sep="_")
 ```
@@ -121,7 +119,7 @@ Cells of low quality and genes of low expression shall be removed prior to the a
 Two common measures of cell quality are the library size and the number of expressed genes in each cell.
 The number of unique genes and total molecules (library size) are automatically calculated during `CreateSeuratObject()`.
 Another measure to look at is the proportion of reads from mitochondrial genes in each cell.
-Cells with higher mitochondrial content are more prone to die, and hence should also be from the analysis.
+Cells with higher mitochondrial content are more prone to die, and hence should also be from the analysis [@ilicic2016classification].
 Here, we calculate the percentages of reads from mitochondrial genes and store them in the metadata of the Seurat object.
 We use the set of all genes starting with MT- as a set of mitochondrial genes.
 ```{r MT}
@@ -176,7 +174,7 @@ plot2
 ```
 
 Before proceeding to dimensional reduction, we apply a linear transformation to "scale" the data.
-This data scaling is performed by the ``ScaleData()`` function, which standardizes the expression of each gene to have a mean expression of 0 and a variance of 1 across all the cells.
+This data scaling is performed by the `ScaleData()` function, which standardizes the expression of each gene to have a mean expression of 0 and a variance of 1 across all the cells.
 This step gives equal weight to the genes used in downstream analyses so that highly-expressed genes do not dominate.
 
 By default, the scaling process is only applied to the previously identified 1500 HVGs as these HVGs are used for the downstream analyses.
@@ -201,7 +199,7 @@ DimPlot(N1469, reduction = "pca")
 
 Although PCA greatly reduces the dimension of the data from thousands of genes to 50 PCs, it is still difficult to visualize and interpret the 50 PCs at the same time.
 Therefore, further dimensionality reduction strategies are required to compress the data into 2-3 dimensions for a more intuitive understanding of the data.
-The two popular non-linear dimensional reduction techniques are _t_-stochastic neighbor embedding (tSNE) and uniform manifold approximation and projection (UMAP).
+The two popular non-linear dimensional reduction techniques are _t_-stochastic neighbor embedding (tSNE) [@van2008visualizing] and uniform manifold approximation and projection (UMAP) [@mcinnes2018umap].
 
 It is debatable whether the UMAP or tSNE visualization is better. 
 UMAP tends to have more compact visual clusters but reduces resolution within each cluster. 
@@ -233,7 +231,7 @@ This question is often hard to answer since we can define as many clusters as we
 In fact, the number of clusters would depend on the biological questions of interest (eg. whether resolution of the major cell types will be sufficient or resolution of subtypes is required).
 In practice, we often experiment with different resolution in data exploration to obtain the "optimal" resolution that provides the best answer to the questions of our interest.
 
-In Seurat, the cell clustering procedure starts by constructing a KNN graph using the ``FindNeighbors()`` function.
+In Seurat, the cell clustering procedure starts by constructing a KNN graph using the `FindNeighbors()` function.
 Here, we use the top 30 PCs as input.
 Then the Seurat ``FindClusters()`` function applies the Louvain algorithm (by default) to group cells together.
 For this particular data, we set the resolution parameter to 0.1.
@@ -304,9 +302,9 @@ Prior biological knowledge is often required to do so.
 Marker genes from the literatures or the curated gene sets (e.g., Gene Ontology, KEGG pathways) are the common sources of prior information.
 Alternatively, we can use published reference datasets where samples are well annotated with cell type information.
 
-Here we use a reference bulk RNA-seq dataset on human mammary gland epithelium.
-This reference RNA-seq data consists of a total of 34 samples from basal, luminal progenitor (LP), mature luminal (ML), and stromal cell types.
-Differential expression analysis of this reference data was performed using limma-voom and TREAT. 
+Here we use a reference bulk RNA-seq dataset of human mammary gland epithelium from the same study [@pal2021scrnaseqatlas].
+This reference RNA-seq (GSE161892) data consists of a total of 34 samples from basal, luminal progenitor (LP), mature luminal (ML), and stromal cell types.
+Differential expression analysis of this reference data was performed using limma-voom and TREAT [@law2014voom; @mccarthy2009testing]. 
 Genes were considered cell type-specific if they were upregulated in one cell type vs all other types. 
 This yielded 515, 323, 765, and 1094 signature genes for basal, LP, ML, and stroma, respectively.
 
@@ -350,11 +348,9 @@ Likewise, cluster 0 and 4 are LP, cluster 1 is ML and cluster 3 is stroma.
 Another way to visualize the correlation between the single cell and the reference bulk dataset is to make a ternary plot, which is useful for studies concerning three major cell populations.
 For this data, we are particularly interested in assigning each cell to one of the three major epithelial cell populations (basal, LP and ML).
 
-
 We produce a ternary plot to see which of the three populations the cells are closer to.
 To measure the similarity between each cell and three populations, we count the numbers of expressed signatures (with at least 1 count) in each cell.
 The position of each cell on the ternary plot is determined by the numbers of expressed gene signatures of the three populations in that cell.
-
 ```{r TernaryPlot, fig.cap="Violin plots of signature scores.", fig.height=5.5, fig.width=5.5}
 TN <- matrix(0L, ncol(N1469), 3L)
 colnames(TN) <- c("LP", "ML", "Basal")
@@ -526,7 +522,7 @@ Many statistically rigorous methods and software packages have been developed fo
 
 For single cell RNA-seq experiments with biological replicates, one should also take into account the biological variation between different replicate samples where cells are obtained.
 However, applying bulk RNA-seq DE methods directly to single cell RNA-seq data is not appropriate as each cell is not independent biological replicate.
-One of the commonly used methods to account for biological variation between replicates is the "pseudo-bulk" approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together.
+One of the commonly used methods to account for biological variation between replicates is the "pseudo-bulk" approach, where read counts from all cells with the same combination of label (e.g., cluster) and sample are summed together [@tung2017batch].
 
 ## Creating pseudo-bulk samples
 
@@ -545,7 +541,7 @@ rawCounts <- as.matrix(NormEpi@assays$RNA@counts)
 counts <- t(rowsum(t(rawCounts), group=sampClust))
 ```
 
-We create a `DGEList` object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline.
+We create a `DGEList` object using the pseudo-bulk samples and proceed to the edgeR DE analysis pipeline [@chen2016reads].
 ```{r edgeR}
 library(edgeR)
 y <- DGEList(counts)
@@ -572,7 +568,7 @@ y <- y[keep.gene,,keep=FALSE]
 
 ## Normalization
 
-We perform TMM normalization to adjust for the compositional biases between the samples.
+We perform TMM normalization [@robinson2010scaling] to adjust for the compositional biases between the samples.
 The normalization factors are listed below.
 ```{r TMM}
 y <- calcNormFactors(y)
