@@ -7,7 +7,7 @@ This workshop uses the 10X Genomics dataset from [Pal et al. 2021](https://doi.o
 This workshop includes the following three parts:
 * Standard analysis of one sample
 * Integration analysis of multiple samples
-* Multi-sample differential expression analysis using pseudo-bulk
+* Differential expression analysis using pseudo-bulk
 
 The detailed material can be found [here](https://yunshun.github.io/SingleCellWorkshop/articles/SingleCellWorkshop.html).
 
@@ -25,7 +25,7 @@ The following R packages will be used:
 * edgeR
 * vcd
 * scales
-* magick
+* pheatmap
 
 ## Time outline
 

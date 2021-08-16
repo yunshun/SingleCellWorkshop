@@ -15,8 +15,6 @@ vignette: >
   %\VignetteIndexEntry{Integration analysis of multi-sample single cell RNA-seq experiment}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-abstract: |
-  Description of your vignette
 ---
 
 
