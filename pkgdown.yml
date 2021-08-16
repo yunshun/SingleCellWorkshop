@@ -2,8 +2,8 @@ pandoc: 2.11.4
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
-  SingleCellWorkshop: SingleCellWorkshop.html
-last_built: 2021-08-16T10:37Z
+  Integration: Integration.html
+last_built: 2021-08-16T11:51Z
 urls:
   reference: https://yunshun.github.io/SingleCellWorkshop/reference
   article: https://yunshun.github.io/SingleCellWorkshop/articles
