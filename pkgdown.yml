@@ -3,7 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   Integration: Integration.html
-last_built: 2021-08-16T11:51Z
+last_built: 2021-08-16T12:42Z
 urls:
   reference: https://yunshun.github.io/SingleCellWorkshop/reference
   article: https://yunshun.github.io/SingleCellWorkshop/articles
