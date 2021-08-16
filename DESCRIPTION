@@ -20,9 +20,7 @@ Suggests:
     knitr,
     rmarkdown,
     markdown,
-    pkgdown,
-    BiocStyle,
-    shiny
+    pkgdown
 URL: https://yunshun.github.io/SingleCellWorkshop/
 BugReports: https://github.com/yunshun/SingleCellWorkshop/issues/new/choose
 VignetteBuilder: knitr

@@ -5,16 +5,14 @@ author:
   affiliation: Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia
   email: yuchen@wehi.edu.au
 date: Aug 16, 2021
-output:
-  BiocStyle::html_document:
-    toc: true
-    toc_float: true
-    fig_caption: true
-bibliography: ref.bib
 vignette: >
   %\VignetteIndexEntry{Integration analysis of multi-sample single cell RNA-seq experiment}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: ref.bib
+output:
+  rmarkdown::html_vignette:
+    fig_caption: true
 ---
 
 
@@ -49,7 +47,6 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 #knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE)
 options(digits=3)
 options(width=90)
-library(BiocStyle)
 ```
 
 ## Downloading the read counts
