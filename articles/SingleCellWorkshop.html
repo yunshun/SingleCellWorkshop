@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.13</span>
       </span>
     </div>
 
@@ -44,19 +44,10 @@
   </a>
 </li>
 <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../articles/SingleCellWorkshop.html">Get started</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Integration.html">Integration analysis of multi-sample single cell RNA-seq experiment</a>
-    </li>
-  </ul>
+  <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -76,7 +67,7 @@
 
       
 
-      </header><script src="Integration_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
+      </header><script src="SingleCellWorkshop_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Integration analysis of multi-sample single cell RNA-seq experiment</h1>
@@ -85,10 +76,10 @@
       Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia<br><a class="author_email" href="mailto:#"></a><a href="mailto:yuchen@wehi.edu.au" class="email">yuchen@wehi.edu.au</a>
       </address>
                   
-            <h4 class="date">Aug 16, 2021</h4>
+            <h4 class="date">Aug 17, 2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/yunshun/SingleCellWorkshop/blob/master/vignettes/Integration.Rmd"><code>vignettes/Integration.Rmd</code></a></small>
-      <div class="hidden name"><code>Integration.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/yunshun/SingleCellWorkshop/blob/master/vignettes/SingleCellWorkshop.Rmd"><code>vignettes/SingleCellWorkshop.Rmd</code></a></small>
+      <div class="hidden name"><code>SingleCellWorkshop.Rmd</code></div>
 
     </div>
 
@@ -177,7 +168,7 @@
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FeatureScatter.html">FeatureScatter</a></span><span class="op">(</span><span class="va">N1469</span>, feature1 <span class="op">=</span> <span class="st">"nCount_RNA"</span>, feature2 <span class="op">=</span> <span class="st">"nFeature_RNA"</span>, plot.cor<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">+</span> <span class="va">plot2</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/QC_Scatter_plot-1.png" alt="Scatter plots of QC metrics." width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/QC_Scatter_plot-1.png" alt="Scatter plots of QC metrics." width="864"><p class="caption">
 Scatter plots of QC metrics.
 </p>
 </div>
@@ -207,7 +198,7 @@ Scatter plots of QC metrics.
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/LabelPoints.html">LabelPoints</a></span><span class="op">(</span>plot<span class="op">=</span><span class="va">plot1</span>, points<span class="op">=</span><span class="va">top50</span>, repel<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">plot2</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/HVG_plot-1.png" alt="A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled." width="672"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/HVG_plot-1.png" alt="A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled." width="672"><p class="caption">
 A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs are labelled.
 </p>
 </div>
@@ -225,7 +216,7 @@ A mean-variance plot where top 1500 HVGs are highlighted in red and top 50 HVGs 
 <code class="sourceCode R"><span class="va">N1469</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html">RunPCA</a></span><span class="op">(</span><span class="va">N1469</span>, features<span class="op">=</span><span class="fu"><a href="https://satijalab.org/seurat/reference/VariableFeatures.html">VariableFeatures</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"pca"</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/PCA-1.png" alt="PCA plot showing the first two principal components of the data." width="672"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/PCA-1.png" alt="PCA plot showing the first two principal components of the data." width="672"><p class="caption">
 PCA plot showing the first two principal components of the data.
 </p>
 </div>
@@ -241,7 +232,7 @@ PCA plot showing the first two principal components of the data.
 <span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span><span class="op">)</span>
 <span class="va">plot1</span> <span class="op">+</span> <span class="va">plot2</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/DR_plot-1.png" alt="UMAP and t-SNE visualization" width="864"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/DR_plot-1.png" alt="UMAP and t-SNE visualization" width="864"><p class="caption">
 UMAP and t-SNE visualization
 </p>
 </div>
@@ -273,7 +264,7 @@ UMAP and t-SNE visualization
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">N1469</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/UMAP-1.png" alt="UMAP visualization where cells are coloured by cell cluster." width="720"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/UMAP-1.png" alt="UMAP visualization where cells are coloured by cell cluster." width="720"><p class="caption">
 UMAP visualization where cells are coloured by cell cluster.
 </p>
 </div>
@@ -334,7 +325,7 @@ UMAP visualization where cells are coloured by cell cluster.
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="va">top3</span><span class="op">$</span><span class="va">gene</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/FeaturePlotMarkers-1.png" alt="Top marker expression visualizations on a UMAP plot." width="1056"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/FeaturePlotMarkers-1.png" alt="Top marker expression visualizations on a UMAP plot." width="1056"><p class="caption">
 Top marker expression visualizations on a UMAP plot.
 </p>
 </div>
@@ -342,7 +333,7 @@ Top marker expression visualizations on a UMAP plot.
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DotPlot.html">DotPlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="va">top3</span><span class="op">$</span><span class="va">gene</span>, dot.scale <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SeuratTheme.html">RotatedAxis</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/DotPlotMarkers-1.png" alt="A dot plot of top marker genes of each cluster." width="768"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/DotPlotMarkers-1.png" alt="A dot plot of top marker genes of each cluster." width="768"><p class="caption">
 A dot plot of top marker genes of each cluster.
 </p>
 </div>
@@ -375,14 +366,14 @@ A dot plot of top marker genes of each cluster.
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/SigScorePlot-1.png" alt="Signature scores." width="960"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScorePlot-1.png" alt="Signature scores." width="960"><p class="caption">
 Signature scores.
 </p>
 </div>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">N1469</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/SigScoreViolinPlot-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
 Violin plots of signature scores.
 </p>
 </div>
@@ -399,7 +390,7 @@ Violin plots of signature scores.
 <span class="va">col.p</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/vcd/man/ternaryplot.html">ternaryplot</a></span><span class="op">(</span><span class="va">TN</span>, cex<span class="op">=</span><span class="fl">0.2</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">N1469</span><span class="op">)</span><span class="op">]</span>, grid<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/TernaryPlot-1.png" alt="Violin plots of signature scores." width="528"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/TernaryPlot-1.png" alt="Violin plots of signature scores." width="528"><p class="caption">
 Violin plots of signature scores.
 </p>
 </div>
@@ -469,7 +460,7 @@ Violin plots of signature scores.
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, group.by<span class="op">=</span><span class="st">"orig.ident"</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/UMAP_Sample-1.png" alt="UMAP visualization of the integrated data where cells are coloured by patient." width="768"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/UMAP_Sample-1.png" alt="UMAP visualization of the integrated data where cells are coloured by patient." width="768"><p class="caption">
 UMAP visualization of the integrated data where cells are coloured by patient.
 </p>
 </div>
@@ -500,7 +491,7 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 <div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/UMAP_Cluster-1.png" alt="UMAP visualization of the integrated data where cells are coloured by cluster." width="768"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/UMAP_Cluster-1.png" alt="UMAP visualization of the integrated data where cells are coloured by cluster." width="768"><p class="caption">
 UMAP visualization of the integrated data where cells are coloured by cluster.
 </p>
 </div>
@@ -525,14 +516,14 @@ UMAP visualization of the integrated data where cells are coloured by cluster.
 <div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/FeaturePlot.html">FeaturePlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/SigScorePlot2-1.png" alt="Signature scores for the integrated data." width="960"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScorePlot2-1.png" alt="Signature scores for the integrated data." width="960"><p class="caption">
 Signature scores for the integrated data.
 </p>
 </div>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/VlnPlot.html">VlnPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">SigScores2</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, pt.size<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/SigScoreViolinPlot2-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/SigScoreViolinPlot2-1.png" alt="Violin plots of signature scores." width="1056"><p class="caption">
 Violin plots of signature scores.
 </p>
 </div>
@@ -547,7 +538,7 @@ Violin plots of signature scores.
 <span class="va">col.p</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/vcd/man/ternaryplot.html">ternaryplot</a></span><span class="op">(</span><span class="va">TN2</span>, cex<span class="op">=</span><span class="fl">0.2</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">]</span>, grid<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/TernaryPlot2-1.png" alt="Violin plots of signature scores for the integrated data." width="576"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/TernaryPlot2-1.png" alt="Violin plots of signature scores for the integrated data." width="576"><p class="caption">
 Violin plots of signature scores for the integrated data.
 </p>
 </div>
@@ -665,7 +656,7 @@ Violin plots of signature scores for the integrated data.
 <span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">Patient</span>, main<span class="op">=</span><span class="st">"By sample"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Patient</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="1056"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="1056"><p class="caption">
 MDS plots of the pseudo-bulk samples.
 </p>
 </div>
@@ -690,7 +681,7 @@ MDS plots of the pseudo-bulk samples.
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotBCV.html">plotBCV</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/plotQLDisp.html">plotQLDisp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/plotDisp-1.png" alt="BCV and quasi-likelihood dispersion plots." width="1056"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/plotDisp-1.png" alt="BCV and quasi-likelihood dispersion plots." width="1056"><p class="caption">
 BCV and quasi-likelihood dispersion plots.
 </p>
 </div>
@@ -784,7 +775,7 @@ BCV and quasi-likelihood dispersion plots.
     show_colnames<span class="op">=</span><span class="cn">FALSE</span>, treeheight_row<span class="op">=</span><span class="fl">70</span>, treeheight_col<span class="op">=</span><span class="fl">70</span>, cutree_cols<span class="op">=</span><span class="va">ncls</span>,
     clustering_method<span class="op">=</span><span class="st">"ward.D2"</span>, annotation_col<span class="op">=</span><span class="va">annot</span>, annotation_colors<span class="op">=</span><span class="va">ann_colors</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Integration_files/figure-html/HeatmapPB-1.png" alt="Heat map of the top marker genes." width="720"><p class="caption">
+<img src="SingleCellWorkshop_files/figure-html/HeatmapPB-1.png" alt="Heat map of the top marker genes." width="720"><p class="caption">
 Heat map of the top marker genes.
 </p>
 </div>
