@@ -1,6 +1,6 @@
 Package: SingleCellWorkshop
 Title: Single cell RNA-seq analysis workshop
-Version: 0.1.12
+Version: 0.1.13
 Authors@R: 
     person(given = "Yunshun",
            family = "Chen",
