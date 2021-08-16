@@ -37,8 +37,7 @@ They need to be pre-processed by software tools such as _cellranger_.
 We use _cellranger_ to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell.
 The entire analysis in this workflow is conducted within the R environment using the outputs from _cellranger_.
 We do not cover the details of running _cellranger_ as they are beyond the scope of this workflow.
-The information of how to run _cellranger_ is available at 
-\url{https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger}.
+The information of how to run _cellranger_ is available at [here] (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger).
 
 ```{r GlobalOptions, echo=FALSE, include=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(fig.width=6, fig.height=5.5, fig.align='center')
@@ -47,7 +46,7 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 #knitr::opts_chunk$set(cache=TRUE, cache.lazy=FALSE)
 options(digits=3)
 options(width=90)
-set.seed(2021)
+set.seed(2020)
 ```
 
 ## Downloading the read counts
@@ -204,12 +203,10 @@ Note that both UMAP and tSNE involve a series of randomization steps so setting 
 
 Here we perform both UMAP and tSNE for dimensional reduction and visualization.
 The top 30 PCs are used as input and a random seed is used for reproducibility.
-```{r DR}
-dimUsed <- 30
-N1469 <- RunUMAP(N1469, dims=1:dimUsed, seed.use=2021, verbose=FALSE)
-N1469 <- RunTSNE(N1469, dims=1:dimUsed, seed.use=2021)
-```
 ```{r DR_plot, fig.cap="UMAP and t-SNE visualization", fig.height=4, fig.width=9}
+dimUsed <- 30
+N1469 <- RunUMAP(N1469, dims=1:dimUsed, seed.use=2020, verbose=FALSE)
+N1469 <- RunTSNE(N1469, dims=1:dimUsed, seed.use=2020)
 plot1 <- DimPlot(N1469, reduction = "umap")
 plot2 <- DimPlot(N1469, reduction = "tsne")
 plot1 + plot2
@@ -229,7 +226,7 @@ In practice, we often experiment with different resolution in data exploration t
 
 In Seurat, the cell clustering procedure starts by constructing a KNN graph using the `FindNeighbors()` function.
 Here, we use the top 30 PCs as input.
-Then the Seurat ``FindClusters()`` function applies the Louvain algorithm (by default) to group cells together.
+Then the Seurat `FindClusters()` function applies the Louvain algorithm (by default) to group cells together.
 For this particular data, we set the resolution parameter to 0.1.
 The final clusters can be found using the \texttt{Idents()} function.
 ```{r Cluster}
@@ -439,14 +436,11 @@ NormEpi <- ScaleData(NormEpi, verbose=FALSE)
 ```
 
 Then we perform dimensional reduction (PCA and UMAP) for the integrated data.
-```{r DR_All}
-dimUsed <- 30
-NormEpi <- RunPCA(NormEpi, npcs=dimUsed, verbose=FALSE)
-NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2021)
-```
-
 The UMAP visualization of the integrated data is shown below.
 ```{r UMAP_Sample, fig.cap="UMAP visualization of the integrated data where cells are coloured by patient.", fig.height=7, fig.width=8}
+dimUsed <- 30
+NormEpi <- RunPCA(NormEpi, npcs=dimUsed, verbose=FALSE)
+NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2020)
 DimPlot(NormEpi, reduction = "umap", group.by="orig.ident")
 ```
 From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed.
@@ -601,7 +595,7 @@ fit <- glmQLFit(y, design)
 ```
 
 The dispersions can be examined in the following plots.
-```{r plotDisp, fig.cap="BCV and quasi-likelihood dispersion plots.", fig.height=5.5, fig.width=11}
+```{r plotDisp, fig.cap="edgeR BCV and quasi-likelihood dispersion plots.", fig.height=5.5, fig.width=11}
 par(mfrow=c(1,2))
 plotBCV(y)
 plotQLDisp(fit)
