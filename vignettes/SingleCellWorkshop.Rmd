@@ -205,8 +205,8 @@ Here we perform both UMAP and tSNE for dimensional reduction and visualization.
 The top 30 PCs are used as input and a random seed is used for reproducibility.
 ```{r DR_plot, fig.cap="UMAP and t-SNE visualization", fig.height=4, fig.width=9}
 dimUsed <- 30
-N1469 <- RunUMAP(N1469, dims=1:dimUsed, seed.use=2020, verbose=FALSE)
-N1469 <- RunTSNE(N1469, dims=1:dimUsed, seed.use=2020)
+N1469 <- RunUMAP(N1469, dims=1:dimUsed, seed.use=2021, verbose=FALSE)
+N1469 <- RunTSNE(N1469, dims=1:dimUsed, seed.use=2021)
 plot1 <- DimPlot(N1469, reduction = "umap")
 plot2 <- DimPlot(N1469, reduction = "tsne")
 plot1 + plot2
@@ -440,7 +440,7 @@ The UMAP visualization of the integrated data is shown below.
 ```{r UMAP_Sample, fig.cap="UMAP visualization of the integrated data where cells are coloured by patient.", fig.height=7, fig.width=8}
 dimUsed <- 30
 NormEpi <- RunPCA(NormEpi, npcs=dimUsed, verbose=FALSE)
-NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2020)
+NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2021)
 DimPlot(NormEpi, reduction = "umap", group.by="orig.ident")
 ```
 From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed.
