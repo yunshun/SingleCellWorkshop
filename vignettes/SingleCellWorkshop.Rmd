@@ -240,7 +240,7 @@ We can visualize the cell clusters in a UMAP plot.
 DimPlot(N1469, reduction = "umap", label = TRUE)
 ```
 
-## Mark genes identification
+## Marker genes identification
 
 The next step after cell clustering is to identify marker genes that drive separation between the cell clusters.
 Marker genes are usually obtained by performing differential expression analyses between different clusters.
@@ -344,7 +344,7 @@ For this data, we are particularly interested in assigning each cell to one of t
 We produce a ternary plot to see which of the three populations the cells are closer to.
 To measure the similarity between each cell and three populations, we count the numbers of expressed signatures (with at least 1 count) in each cell.
 The position of each cell on the ternary plot is determined by the numbers of expressed gene signatures of the three populations in that cell.
-```{r TernaryPlot, fig.cap="Violin plots of signature scores.", fig.height=5.5, fig.width=5.5}
+```{r TernaryPlot, fig.cap="Ternary plot positioning each cell according to the proportion of basal, LP, or ML signature genes expressed by that cell.", fig.height=5.5, fig.width=5.5}
 TN <- matrix(0L, ncol(N1469), 3L)
 colnames(TN) <- c("LP", "ML", "Basal")
 for(i in colnames(TN)){
@@ -484,14 +484,14 @@ We then produce feature plots and violin plots to visualize the signature scores
 ```{r SigScorePlot2, fig.cap="Signature scores for the integrated data.", fig.height=8.5, fig.width=10}
 FeaturePlot(NormEpi, features = colnames(SigScores2))
 ```
-```{r SigScoreViolinPlot2, fig.cap="Violin plots of signature scores.", fig.height=8, fig.width=11}
+```{r SigScoreViolinPlot2, fig.cap="Violin plots of signature scores for the integrated data.", fig.height=8, fig.width=11}
 VlnPlot(NormEpi, features = colnames(SigScores2), ncol=2, pt.size=0.1)
 ```
 It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells.
 Likewise, cluster 0 and 5 are LP or LP-like, cluster 1 and 4 are ML or ML-like, and cluster 3 is stroma. 
 
 A ternary plot can also be generated in the same way to examine the correlation between the cells and the three major epithelial populations.
-```{r TernaryPlot2, fig.cap="Violin plots of signature scores for the integrated data.", fig.height=6, fig.width=6}
+```{r TernaryPlot2, fig.cap="Ternary plot positioning each cell according to the proportion of basal, LP, or ML signature genes expressed by that cell.", fig.height=6, fig.width=6}
 TN2 <- matrix(0L, ncol(NormEpi), 3L)
 colnames(TN2) <- c("LP", "ML", "Basal")
 for(i in colnames(TN2)){
