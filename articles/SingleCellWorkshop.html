@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.14</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.15</span>
       </span>
     </div>
 
@@ -99,7 +99,7 @@
 <h2 class="hasAnchor">
 <a href="#pre-processing-the-raw-data" class="anchor"></a>Pre-processing the raw data</h2>
 <p>The raw 10X data come in BCL format. They need to be pre-processed by software tools such as <em>cellranger</em>.</p>
-<p>We use <em>cellranger</em> to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell. The entire analysis in this workflow is conducted within the R environment using the outputs from <em>cellranger</em>. We do not cover the details of running <em>cellranger</em> as they are beyond the scope of this workflow. The information of how to run <em>cellranger</em> is available at [here] (<a href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger" class="uri">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger</a>).</p>
+<p>We use <em>cellranger</em> to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell. The entire analysis in this workflow is conducted within the R environment using the outputs from <em>cellranger</em>. We do not cover the details of running <em>cellranger</em> as they are beyond the scope of this workflow. The information of how to run <em>cellranger</em> is available at <a href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger">here</a>.</p>
 </div>
 <div id="downloading-the-read-counts" class="section level2">
 <h2 class="hasAnchor">
@@ -478,7 +478,7 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 ## Running Louvain algorithm...
 ## Maximum modularity in 10 random starts: 0.9645
 ## Number of communities: 6
-## Elapsed time: 2 seconds</code></pre>
+## Elapsed time: 1 seconds</code></pre>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
