@@ -37,7 +37,7 @@ They need to be pre-processed by software tools such as _cellranger_.
 We use _cellranger_ to convert BCL files into the FASTQ files, then align the reads to the human genome, and finally quantify the UMI counts for each gene in each cell.
 The entire analysis in this workflow is conducted within the R environment using the outputs from _cellranger_.
 We do not cover the details of running _cellranger_ as they are beyond the scope of this workflow.
-The information of how to run _cellranger_ is available at [here] (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger).
+The information of how to run _cellranger_ is available at [here](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger).
 
 ```{r GlobalOptions, echo=FALSE, include=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(fig.width=6, fig.height=5.5, fig.align='center')
