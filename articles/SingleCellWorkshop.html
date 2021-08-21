@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.20</span>
       </span>
     </div>
 
@@ -523,7 +523,7 @@ Signature scores for the integrated data.
 Violin plots of signature scores for the integrated data.
 </p>
 </div>
-<p>It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells. Likewise, cluster 0 and 5 are LP or LP-like, cluster 1 and 4 are ML or ML-like, and cluster 3 is stroma.</p>
+<p>It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells. Likewise, cluster 0 and 4 are LP or LP-like, cluster 1 is ML, and cluster 3 is stroma.</p>
 <p>A ternary plot can also be generated in the same way to examine the correlation between the cells and the three major epithelial populations.</p>
 <div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">TN2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span>, <span class="fl">3L</span><span class="op">)</span>
@@ -635,15 +635,15 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <span class="va">Patient</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">Patient</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
 <span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">[</span><span class="va">Cluster</span><span class="op">]</span>, main<span class="op">=</span><span class="st">"By cluster"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Cluster"</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Cluster"</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">col.p</span><span class="op">)</span>
 <span class="fu">plotMDS</span><span class="op">(</span><span class="va">y</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="va">Patient</span>, main<span class="op">=</span><span class="st">"By sample"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomleft"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Patient</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">Patient</span><span class="op">)</span>, pch<span class="op">=</span><span class="fl">16</span>, col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="SingleCellWorkshop_files/figure-html/MDS-1.png" alt="MDS plots of the pseudo-bulk samples." width="1056"><p class="caption">
 MDS plots of the pseudo-bulk samples.
 </p>
 </div>
-<p>From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level. We also notice that samples from cluster 0 and 5 have similar expression pattern, whereas samples from cluster 1 and 4 are close to each other.</p>
+<p>From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level. We also notice that the pseudo-bulk samples from luminal (cluster 0, 1 and 4), basal (cluster 2) and stroma (cluster 3) are separated in the first dimension. The three luminal cell populations (cluster 0, 1 and 4) are separated from each other in the second dimension.</p>
 <p>We use the cluster and sample information to create a design matrix as follows.</p>
 <div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">Cluster</span> <span class="op">+</span> <span class="va">Patient</span><span class="op">)</span>
