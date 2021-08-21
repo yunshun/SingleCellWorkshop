@@ -4,7 +4,7 @@ author:
 - name: Yunshun Chen
   affiliation: Walter and Eliza Hall Institute of Medical Research, 1G Royal Parade, Parkville, VIC 3052, Melbourne, Australia
   email: yuchen@wehi.edu.au
-date: Aug 17, 2021
+date: Aug 21, 2021
 vignette: >
   %\VignetteIndexEntry{Integration analysis of multi-sample single cell RNA-seq experiment}
   %\VignetteEngine{knitr::rmarkdown}
@@ -51,14 +51,14 @@ set.seed(2020)
 
 ## Downloading the read counts
 
-In this workshop, we will be using five samples from this published study [@pal2021scrnaseqatlas].
-These five samples correspond to five individual patients with the following Ids: N1469, N0280, N1105, N0230 and N0123.
-The accession numbers of the five samples are GSM4909258, GSM4909255, GSM4909260, GSM4909264 and GSM4909267, respectively.
+In this workshop, we will be using four samples from this published study [@pal2021scrnaseqatlas].
+These four samples correspond to four individual patients with the following Ids: N1469, N0280, N0230 and N0123.
+The accession numbers of the four samples are GSM4909258, GSM4909255, GSM4909264 and GSM4909267, respectively.
 
 We first create a `Data` folder under the current working directory.
 Then we make five subfolders with the patient Ids as the folder names under the `Data` folder.
 ```{r Samples}
-Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
+Samples <- c("N1469", "N0280", "N0230", "N0123")
 for(i in 1:length(Samples)){
     out_dir  <- file.path("Data", Samples[i])
     if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
@@ -66,13 +66,12 @@ for(i in 1:length(Samples)){
 ```
 
 The cellranger output of each sample consists of three data files: a count matrix in _mtx.gz_ format, barcode information in _tsv.gz_ format, and feature information in _tsv.gz_.
-We download the three data files from GEO for each of the five samples and store them in each of the subfolders accordingly.
+We download the three data files from GEO for each of the four samples and store them in each of the subfolders accordingly.
 ```{r Download, eval=TRUE}
 GSM <- "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4909nnn/"
 url.matrix <- paste0(GSM, 
     c("GSM4909258/suppl/GSM4909258_N-NF-Epi-matrix.mtx.gz",
       "GSM4909255/suppl/GSM4909255_N-N280-Epi-matrix.mtx.gz", 
-      "GSM4909260/suppl/GSM4909260_N-N1105-Epi-matrix.mtx.gz",
       "GSM4909264/suppl/GSM4909264_N-N1B-Epi-matrix.mtx.gz",
       "GSM4909267/suppl/GSM4909267_N-MH0023-Epi-matrix.mtx.gz"))
 url.barcodes <- gsub("matrix.mtx", "barcodes.tsv", url.matrix)
@@ -369,10 +368,10 @@ Here, we will demonstrate how to perform an integration analysis in Seurat.
 
 ## Read in the data
 
-We use 10X single cell RNA-seq profiles of normal epithelial cells from five individual human.
-We first read in the raw data of all five samples for the integration analysis.
+We use 10X single cell RNA-seq profiles of normal epithelial cells from four individual human.
+We first read in the raw data of all four samples for the integration analysis.
 ```{r ReadAll, eval=TRUE}
-Samples <- c("N1469", "N0280", "N1105", "N0230", "N0123")
+Samples <- c("N1469", "N0280", "N0230", "N0123")
 RawData <- list()
 RawData[[1]] <- N1469.data
 for(i in 2:length(Samples)) {
@@ -382,7 +381,7 @@ for(i in 2:length(Samples)) {
 names(RawData) <- Samples
 ```
 
-Then we create a list of 5 Seurat objects (one for each human sample).
+Then we create a list of four Seurat objects (one for each human sample).
 The same cell filtering criteria is applied to all the samples. 
 ```{r SeuratList, eval=TRUE}
 SeuratList <- list()
@@ -416,11 +415,6 @@ We then use these anchors to integrate the five datasets together with `Integrat
 This step creates an \texttt{integrated} data assay.
 ```{r Integrate, eval=TRUE}
 NormEpi <- IntegrateData(Anchors)
-```
-```{r LoadResults, echo=FALSE, eval=FALSE}
-url.integrated <- "http://bioinf.wehi.edu.au/edgeR/SingleCellWorkshop/NormEpi.rds"
-utils::download.file(url.integrated, destfile="Data/NormEpi.rds", mode="wb") 
-NormEpi <- readRDS("Data/NormEpi.rds")
 ```
 
 Now we can run a single integrated analysis on all cells.
