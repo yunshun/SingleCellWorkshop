@@ -482,7 +482,7 @@ FeaturePlot(NormEpi, features = colnames(SigScores2))
 VlnPlot(NormEpi, features = colnames(SigScores2), ncol=2, pt.size=0.1)
 ```
 It can be seen that cells in cluster 2 have high expression levels of basal signature genes, suggesting these cells are likely to be basal cells.
-Likewise, cluster 0 and 5 are LP or LP-like, cluster 1 and 4 are ML or ML-like, and cluster 3 is stroma. 
+Likewise, cluster 0 and 4 are LP or LP-like, cluster 1 is ML, and cluster 3 is stroma. 
 
 A ternary plot can also be generated in the same way to examine the correlation between the cells and the three major epithelial populations.
 ```{r TernaryPlot2, fig.cap="Ternary plot positioning each cell according to the proportion of basal, LP, or ML signature genes expressed by that cell.", fig.height=6, fig.width=6}
@@ -567,12 +567,13 @@ Cluster <- factor(y$samples$group)
 Patient <- y$samples$Patient
 par(mfrow=c(1,2))
 plotMDS(y, pch=16, col=col.p[Cluster], main="By cluster")
-legend("bottomleft", legend=paste("Cluster", levels(Cluster)), pch=16, col=col.p)
+legend("bottomright", legend=paste("Cluster", levels(Cluster)), pch=16, col=col.p)
 plotMDS(y, pch=16, col=Patient, main="By sample")
-legend("bottomleft", legend=levels(Patient), pch=16, col=1:5)
+legend("bottomright", legend=levels(Patient), pch=16, col=1:5)
 ```
 From the MDS plot it can be seen that the pseudo-bulk samples are grouped by cluster defined at the single cell level.
-We also notice that samples from cluster 0 and 5 have similar expression pattern, whereas samples from cluster 1 and 4 are close to each other.
+We also notice that the pseudo-bulk samples from luminal (cluster 0, 1 and 4), basal (cluster 2) and stroma (cluster 3) are separated in the first dimension.
+The three luminal cell populations (cluster 0, 1 and 4) are separated from each other in the second dimension.
 
 We use the cluster and sample information to create a design matrix as follows.
 ```{r design}
