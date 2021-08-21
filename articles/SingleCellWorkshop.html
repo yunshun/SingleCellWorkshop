@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SingleCellWorkshop</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.19</span>
       </span>
     </div>
 
@@ -105,7 +105,7 @@
 <h2 class="hasAnchor">
 <a href="#downloading-the-read-counts" class="anchor"></a>Downloading the read counts</h2>
 <p>In this workshop, we will be using four samples from this published study <span class="citation">(Pal et al. 2021)</span>. These four samples correspond to four individual patients with the following Ids: N1469, N0280, N0230 and N0123. The accession numbers of the four samples are GSM4909258, GSM4909255, GSM4909264 and GSM4909267, respectively.</p>
-<p>We first create a <code>Data</code> folder under the current working directory. Then we make five subfolders with the patient Ids as the folder names under the <code>Data</code> folder.</p>
+<p>We first create a <code>Data</code> folder under the current working directory. Then we make four subfolders with the patient Ids as the folder names under the <code>Data</code> folder.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"N1469"</span>, <span class="st">"N0280"</span>, <span class="st">"N0230"</span>, <span class="st">"N0123"</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Samples</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
@@ -438,7 +438,7 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <p>We identify anchors using the <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">FindIntegrationAnchors()</a></code> function, which takes a list of Seurat objects as input.</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Anchors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">FindIntegrationAnchors</a></span><span class="op">(</span><span class="va">SeuratList</span><span class="op">)</span></code></pre></div>
-<p>We then use these anchors to integrate the five datasets together with <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">IntegrateData()</a></code>. This step creates an  data assay.</p>
+<p>We then use these anchors to integrate the four datasets together with <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">IntegrateData()</a></code>. This step creates an  data assay.</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NormEpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/IntegrateData.html">IntegrateData</a></span><span class="op">(</span><span class="va">Anchors</span><span class="op">)</span></code></pre></div>
 <p>Now we can run a single integrated analysis on all cells. The downstream analysis will be performed on corrected data (the <code>integrated</code> data assay). The original unmodified data still resides in the <code>RNA</code> assay.</p>
@@ -460,7 +460,7 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 UMAP visualization of the integrated data where cells are coloured by patient.
 </p>
 </div>
-<p>From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed. It is also noticable that each of the big clusters contains a mixture of cells from different samples, suggesting these five samples share a similar cell type composition.</p>
+<p>From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed. It is also noticable that each of the big clusters contains a mixture of cells from different samples, suggesting these four samples share a similar cell type composition.</p>
 </div>
 <div id="cell-clustering-1" class="section level2">
 <h2 class="hasAnchor">
@@ -472,17 +472,17 @@ UMAP visualization of the integrated data where cells are coloured by patient.
 <pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
 ## 
 ## Number of nodes: 8691
-## Number of edges: 364828
+## Number of edges: 364530
 ## 
 ## Running Louvain algorithm...
-## Maximum modularity in 10 random starts: 0.9637
-## Number of communities: 6
+## Maximum modularity in 10 random starts: 0.9638
+## Number of communities: 5
 ## Elapsed time: 1 seconds</code></pre>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
-##    0    1    2    3    4    5 
-## 3896 2982 1221  352  176   64</code></pre>
+##    0    1    2    3    4 
+## 3956 3106 1222  341   66</code></pre>
 <p>The clustering results are shown in the UMAP plot below.</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html">DimPlot</a></span><span class="op">(</span><span class="va">NormEpi</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, label<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -559,14 +559,12 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <span class="va">sampClust</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">sampID</span>, <span class="va">clustID</span>, sep<span class="op">=</span><span class="st">"_Clst"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">sampClust</span><span class="op">)</span></code></pre></div>
 <pre><code>## sampClust
-## N0123_Clst0 N0123_Clst1 N0123_Clst2 N0123_Clst3 N0123_Clst4 N0123_Clst5 N0230_Clst0 
-##         836        1565         359          13          47          20        1017 
-## N0230_Clst1 N0230_Clst2 N0230_Clst3 N0230_Clst4 N0230_Clst5 N0280_Clst0 N0280_Clst1 
-##         565         142          82          35          16         349         394 
-## N0280_Clst2 N0280_Clst3 N0280_Clst4 N0280_Clst5 N1469_Clst0 N1469_Clst1 N1469_Clst2 
-##         301          40          41           1        1694         458         419 
-## N1469_Clst3 N1469_Clst4 N1469_Clst5 
-##         217          53          27</code></pre>
+## N0123_Clst0 N0123_Clst1 N0123_Clst2 N0123_Clst3 N0123_Clst4 N0230_Clst0 N0230_Clst1 
+##         841        1608         359          12          20        1041         579 
+## N0230_Clst2 N0230_Clst3 N0230_Clst4 N0280_Clst0 N0280_Clst1 N0280_Clst2 N0280_Clst3 
+##         142          79          16         360         422         301          40 
+## N0280_Clst4 N1469_Clst0 N1469_Clst1 N1469_Clst2 N1469_Clst3 N1469_Clst4 
+##           3        1714         497         420         210          27</code></pre>
 <p>We then form pseudo-bulk samples by aggregating the read counts for each gene by cluster-sample combination.</p>
 <div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">rawCounts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span><span class="op">)</span>
@@ -587,7 +585,7 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.sample</span><span class="op">)</span></code></pre></div>
 <pre><code>## keep.sample
 ## FALSE  TRUE 
-##     2    22</code></pre>
+##     1    19</code></pre>
 <div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span>,<span class="va">keep.sample</span><span class="op">]</span></code></pre></div>
 <p>The gene filtering is performed by the <code>filterByExpr</code> function in edgeR.</p>
@@ -596,7 +594,7 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">keep.gene</span><span class="op">)</span></code></pre></div>
 <pre><code>## keep.gene
 ## FALSE  TRUE 
-##  7099 10701</code></pre>
+##  6990 10810</code></pre>
 <div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">keep.gene</span>,,keep<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></code></pre></div>
 </div>
@@ -608,28 +606,25 @@ Ternary plot positioning each cell according to the proportion of basal, LP, or 
 <code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html">calcNormFactors</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 <span class="va">y</span><span class="op">$</span><span class="va">samples</span></code></pre></div>
 <pre><code>##             group lib.size norm.factors Patient
-## N0123_Clst0     0  4231706        0.921   N0123
-## N0123_Clst1     1  5928347        1.036   N0123
-## N0123_Clst2     2   923732        0.867   N0123
-## N0123_Clst4     4   160151        1.097   N0123
-## N0123_Clst5     5   162483        1.143   N0123
-## N0230_Clst0     0  4147705        1.114   N0230
-## N0230_Clst1     1  1981193        1.142   N0230
-## N0230_Clst2     2   436826        1.060   N0230
-## N0230_Clst3     3   232687        1.106   N0230
-## N0230_Clst4     4   115897        1.200   N0230
-## N0230_Clst5     5   104431        1.470   N0230
-## N0280_Clst0     0  3781624        0.730   N0280
-## N0280_Clst1     1  2062210        1.007   N0280
-## N0280_Clst2     2  1354519        0.867   N0280
-## N0280_Clst3     3   190398        1.040   N0280
-## N0280_Clst4     4   204584        1.165   N0280
-## N1469_Clst0     0 10372641        0.866   N1469
-## N1469_Clst1     1  2303963        0.933   N1469
-## N1469_Clst2     2  1818339        0.831   N1469
-## N1469_Clst3     3  1203015        0.774   N1469
-## N1469_Clst4     4   249112        0.879   N1469
-## N1469_Clst5     5   250260        1.041   N1469</code></pre>
+## N0123_Clst0     0  4252813        0.927   N0123
+## N0123_Clst1     1  6070461        1.068   N0123
+## N0123_Clst2     2   924418        0.941   N0123
+## N0123_Clst4     4   162634        1.232   N0123
+## N0230_Clst0     0  4229170        0.943   N0230
+## N0230_Clst1     1  2035340        1.060   N0230
+## N0230_Clst2     2   433661        0.953   N0230
+## N0230_Clst3     3   221680        1.165   N0230
+## N0230_Clst4     4   104554        1.542   N0230
+## N0280_Clst0     0  3832676        0.768   N0280
+## N0280_Clst1     1  2190221        1.090   N0280
+## N0280_Clst2     2  1355621        0.971   N0280
+## N0280_Clst3     3   190483        1.058   N0280
+## N0280_Clst4     4    55550        1.309   N0280
+## N1469_Clst0     0 10489687        0.723   N1469
+## N1469_Clst1     1  2455788        0.872   N1469
+## N1469_Clst2     2  1825712        0.802   N1469
+## N1469_Clst3     3  1184520        0.845   N1469
+## N1469_Clst4     4   250531        1.059   N1469</code></pre>
 </div>
 <div id="data-exploration" class="section level2">
 <h2 class="hasAnchor">
@@ -654,7 +649,7 @@ MDS plots of the pseudo-bulk samples.
 <code class="sourceCode R"><span class="va">design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">Cluster</span> <span class="op">+</span> <span class="va">Patient</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] "Cluster0"     "Cluster1"     "Cluster2"     "Cluster3"     "Cluster4"    
-## [6] "Cluster5"     "PatientN0280" "PatientN0230" "PatientN0123"</code></pre>
+## [6] "PatientN0280" "PatientN0230" "PatientN0123"</code></pre>
 </div>
 <div id="dispersion-estimation" class="section level2">
 <h2 class="hasAnchor">
@@ -686,16 +681,15 @@ edgeR BCV and quasi-likelihood dispersion plots.
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">design</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Cluster"</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html">Idents</a></span><span class="op">(</span><span class="va">NormEpi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="va">contr</span></code></pre></div>
-<pre><code>##              Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
-## Cluster0          1.0     -0.2     -0.2     -0.2     -0.2     -0.2
-## Cluster1         -0.2      1.0     -0.2     -0.2     -0.2     -0.2
-## Cluster2         -0.2     -0.2      1.0     -0.2     -0.2     -0.2
-## Cluster3         -0.2     -0.2     -0.2      1.0     -0.2     -0.2
-## Cluster4         -0.2     -0.2     -0.2     -0.2      1.0     -0.2
-## Cluster5         -0.2     -0.2     -0.2     -0.2     -0.2      1.0
-## PatientN0280      0.0      0.0      0.0      0.0      0.0      0.0
-## PatientN0230      0.0      0.0      0.0      0.0      0.0      0.0
-## PatientN0123      0.0      0.0      0.0      0.0      0.0      0.0</code></pre>
+<pre><code>##              Cluster0 Cluster1 Cluster2 Cluster3 Cluster4
+## Cluster0         1.00    -0.25    -0.25    -0.25    -0.25
+## Cluster1        -0.25     1.00    -0.25    -0.25    -0.25
+## Cluster2        -0.25    -0.25     1.00    -0.25    -0.25
+## Cluster3        -0.25    -0.25    -0.25     1.00    -0.25
+## Cluster4        -0.25    -0.25    -0.25    -0.25     1.00
+## PatientN0280     0.00     0.00     0.00     0.00     0.00
+## PatientN0230     0.00     0.00     0.00     0.00     0.00
+## PatientN0123     0.00     0.00     0.00     0.00     0.00</code></pre>
 <p>We then perform quasi-likelihood F-test under each contrast. In order to focus on genes with strong DE signal, we test for the differences above a fold-change threshold of 1.3. This is done by calling the <code>glmTreat</code> function in edgeR. The results of all the tests are stored as a list of <code>DGELRT</code> objects.</p>
 <div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
@@ -707,35 +701,35 @@ edgeR BCV and quasi-likelihood dispersion plots.
 <span class="va">dtest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="st">"cbind"</span>, <span class="va">dtest</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">dtest</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">contr</span><span class="op">)</span>
 <span class="va">dtest</span></code></pre></div>
-<pre><code>##        Cluster0 Cluster1 Cluster2 Cluster3 Cluster4 Cluster5
-## Down        494      896     1463      823     1190      415
-## NotSig     9155     7577     7059     8317     8090     9701
-## Up         1052     2228     2179     1561     1421      585</code></pre>
+<pre><code>##        Cluster0 Cluster1 Cluster2 Cluster3 Cluster4
+## Down        329     1181     1479     1252      655
+## NotSig     8975     6982     7156     8184     9630
+## Up         1506     2647     2175     1374      525</code></pre>
 <p>We can view the top DE results using the <code>topTags</code> function. For example, to see the top 20 DE genes of cluster 2 vs all the other clusters, we use the following line.</p>
 <div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/topTags.html">topTags</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">Cluster2</span>, n<span class="op">=</span><span class="fl">20L</span><span class="op">)</span></code></pre></div>
-<pre><code>## Coefficient:  -0.2*Cluster0 -0.2*Cluster1 1*Cluster2 -0.2*Cluster3 -0.2*Cluster4 -0.2*Cluster5 
+<pre><code>## Coefficient:  -0.25*Cluster0 -0.25*Cluster1 1*Cluster2 -0.25*Cluster3 -0.25*Cluster4 
 ##          logFC unshrunk.logFC logCPM   PValue      FDR
-## ACTG2     7.81           7.82   9.28 2.04e-23 2.18e-19
-## SERPINB5  6.50           6.52   6.72 4.21e-22 2.25e-18
-## DKK3      5.68           5.70   6.89 6.88e-22 2.45e-18
-## DLL1      5.81           5.83   6.16 2.74e-21 6.44e-18
-## KRT5      6.45           6.45   8.93 3.01e-21 6.44e-18
-## TNS4      5.24           5.26   6.34 1.14e-20 2.04e-17
-## CD200     6.47           6.50   6.68 1.51e-20 2.31e-17
-## CCND2     6.44           6.55   5.73 2.53e-20 3.39e-17
-## OXTR      5.71           5.74   6.50 3.82e-20 4.55e-17
-## TPM2      5.82           5.83   8.25 4.34e-20 4.64e-17
-## MYLK      6.43           6.48   6.49 6.16e-20 6.00e-17
-## KRT14     7.54           7.54  11.02 1.46e-19 1.31e-16
-## DST       3.96           3.96   8.83 1.97e-19 1.62e-16
-## FAM126A   4.69           4.72   5.90 5.24e-19 4.00e-16
-## TUBB2B    4.30           4.30   7.71 6.84e-19 4.88e-16
-## COL17A1   9.72          21.77   5.19 1.13e-18 7.58e-16
-## MSRB3     5.57           5.61   5.30 1.31e-18 7.98e-16
-## LAMA3     6.26           9.73   6.35 1.34e-18 7.98e-16
-## PPP1R3C   6.63           6.69   5.77 2.19e-18 1.23e-15
-## ACTA2     5.97           5.98   8.57 3.47e-18 1.86e-15</code></pre>
+## SERPINB5  6.33           6.35   6.87 2.98e-19 1.87e-15
+## DLL1      5.88           5.90   6.27 3.62e-19 1.87e-15
+## ACTG2     7.42           7.43   9.53 5.19e-19 1.87e-15
+## DKK3      5.57           5.58   7.06 1.36e-18 3.03e-15
+## CCND2     6.37           6.48   5.82 1.48e-18 3.03e-15
+## TNS4      5.73           5.76   6.38 1.68e-18 3.03e-15
+## CD200     6.37           6.40   6.81 2.96e-18 4.57e-15
+## OXTR      5.75           5.77   6.57 1.75e-17 2.21e-14
+## TUBB2B    4.15           4.15   7.89 1.84e-17 2.21e-14
+## KRT5      6.03           6.04   9.16 2.08e-17 2.25e-14
+## COL17A1   9.41          19.32   5.26 3.20e-17 3.15e-14
+## KRT14     7.48           7.48  11.25 3.52e-17 3.17e-14
+## NRP2      5.77           5.82   5.87 3.82e-17 3.17e-14
+## TPM2      5.29           5.29   8.45 1.26e-16 9.71e-14
+## FAM126A   4.08           4.10   5.97 1.43e-16 1.03e-13
+## LAMA3     7.13          11.41   6.38 1.61e-16 1.07e-13
+## MYLK      6.36           6.40   6.61 1.69e-16 1.07e-13
+## MSRB3     5.28           5.31   5.38 3.24e-16 1.94e-13
+## PPP1R3C   6.39           6.44   5.87 4.39e-16 2.50e-13
+## MEG3      5.51           5.55   7.58 4.89e-16 2.64e-13</code></pre>
 <p>We can extract the top 15 marker genes (up-regulated only) of each cluster as follows.</p>
 <div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">top</span> <span class="op">&lt;-</span> <span class="fl">15</span>
