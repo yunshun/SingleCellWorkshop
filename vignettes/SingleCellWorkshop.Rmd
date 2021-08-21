@@ -56,7 +56,7 @@ These four samples correspond to four individual patients with the following Ids
 The accession numbers of the four samples are GSM4909258, GSM4909255, GSM4909264 and GSM4909267, respectively.
 
 We first create a `Data` folder under the current working directory.
-Then we make five subfolders with the patient Ids as the folder names under the `Data` folder.
+Then we make four subfolders with the patient Ids as the folder names under the `Data` folder.
 ```{r Samples}
 Samples <- c("N1469", "N0280", "N0230", "N0123")
 for(i in 1:length(Samples)){
@@ -411,7 +411,7 @@ We identify anchors using the `FindIntegrationAnchors()` function, which takes a
 Anchors <- FindIntegrationAnchors(SeuratList)
 ```
 
-We then use these anchors to integrate the five datasets together with `IntegrateData()`.
+We then use these anchors to integrate the four datasets together with `IntegrateData()`.
 This step creates an \texttt{integrated} data assay.
 ```{r Integrate, eval=TRUE}
 NormEpi <- IntegrateData(Anchors)
@@ -438,7 +438,7 @@ NormEpi <- RunUMAP(NormEpi, dims=1:dimUsed, seed.use=2021)
 DimPlot(NormEpi, reduction = "umap", group.by="orig.ident")
 ```
 From the UMAP it can be seen that cells are not clustered by sample, indicating the batch effects between different samples have been removed.
-It is also noticable that each of the big clusters contains a mixture of cells from different samples, suggesting these five samples share a similar cell type composition.
+It is also noticable that each of the big clusters contains a mixture of cells from different samples, suggesting these four samples share a similar cell type composition.
 
 ## Cell clustering
 
