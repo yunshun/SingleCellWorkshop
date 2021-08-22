@@ -227,7 +227,7 @@ In Seurat, the cell clustering procedure starts by constructing a KNN graph usin
 Here, we use the top 30 PCs as input.
 Then the Seurat `FindClusters()` function applies the Louvain algorithm (by default) to group cells together.
 For this particular data, we set the resolution parameter to 0.1.
-The final clusters can be found using the \texttt{Idents()} function.
+The final clusters can be found using the `Idents()` function.
 ```{r Cluster}
 N1469 <- FindNeighbors(N1469, dims=1:dimUsed)
 N1469 <- FindClusters(N1469, resolution=0.1)
@@ -360,7 +360,7 @@ ternaryplot(TN, cex=0.2, pch=16, col=col.p[Idents(N1469)], grid=TRUE)
 ## Batch effects
 
 Comprehensive single cell RNA-seq experiments usually consist of multiple samples, which may be collected and prepared at different times, by different operators or with different reagents.
-These inconsistencies are referred to as "batch effects" and thye often lead to systematic differences in the expression profiles of the scRNA-seq data.
+These inconsistencies are referred to as "batch effects" and they often lead to systematic differences in the expression profiles of the scRNA-seq data.
 Batch effects can be problematic as they distort the genuine biological differences and may mislead the interpretation of the data.
 Therefore, integration methods that adjust for "batch effects" are highly essential in multi-sample single cell RNA-seq analysis.
 
@@ -392,11 +392,11 @@ for(i in 1:length(Samples)){
 }
 ```
 
-We perform all the pre-processing steps (normalization, defining HVGs and scaling the data) for each individual sample.
+We perform all the pre-processing steps (normalization and defining HVGs) for each individual sample.
+We skip the data scaling as all the samples will be automatically scaled in the integration step.
 ```{r Preprocessing, eval=TRUE}
 SeuratList <- lapply(SeuratList, NormalizeData)
 SeuratList <- lapply(SeuratList, FindVariableFeatures, selection.method="vst", nfeatures=1500)
-SeuratList <- lapply(SeuratList, ScaleData)
 names(SeuratList) <- Samples
 ```
 
@@ -412,7 +412,7 @@ Anchors <- FindIntegrationAnchors(SeuratList)
 ```
 
 We then use these anchors to integrate the four datasets together with `IntegrateData()`.
-This step creates an \texttt{integrated} data assay.
+This step creates an `integrated` data assay.
 ```{r Integrate, eval=TRUE}
 NormEpi <- IntegrateData(Anchors)
 ```
@@ -465,7 +465,7 @@ HumanSig2 <- lapply(HumanSig2, intersect, rownames(NormEpi))
 ```{r SigScores2}
 SigScore2 <- list()
 for(i in 1:length(HumanSig2)){
-    SigScore2[[i]] <- colMeans(NormEpi@assays$RNA@data[HumanSig[[i]], ])
+    SigScore2[[i]] <- colMeans(NormEpi@assays$RNA@data[HumanSig2[[i]], ])
 }
 ```
 ```{r AddMetaData2}
