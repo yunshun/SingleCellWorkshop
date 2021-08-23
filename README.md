@@ -32,8 +32,8 @@ The following R packages will be used:
 | Activity                         | Time |
 |----------------------------------|------|
 | Introduction & setup             | 10m  |
-| Part 1. Standard analysis        | 30m  |
-| Part 2. Integration analysis     | 30m  |
+| Part 1. Standard analysis        | 35m  |
+| Part 2. Integration analysis     | 35m  |
 | Part 3. Pseudo-bulk DE analysis  | 30m  |
 | Q & A                            | 10m  |
 
